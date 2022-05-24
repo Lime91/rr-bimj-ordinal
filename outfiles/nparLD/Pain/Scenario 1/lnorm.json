@@ -1,0 +1,42 @@
+{
+  "method": "nparld",
+  "effect": "lnorm",
+  "power": {
+    "meanlog=0.2, sdlog=1": {
+      "rejection_rate": {
+        "period_1": 0.35,
+        "period_2": 0.26,
+        "combined": "NA"
+      },
+      "NA_count": {
+        "period_1": 0,
+        "period_2": 0,
+        "combined": 100
+      }
+    },
+    "meanlog=0.6, sdlog=1": {
+      "rejection_rate": {
+        "period_1": 0.3,
+        "period_2": 0.36,
+        "combined": "NA"
+      },
+      "NA_count": {
+        "period_1": 0,
+        "period_2": 0,
+        "combined": 100
+      }
+    },
+    "meanlog=0.9, sdlog=1": {
+      "rejection_rate": {
+        "period_1": 0.37,
+        "period_2": 0.5,
+        "combined": "NA"
+      },
+      "NA_count": {
+        "period_1": 0,
+        "period_2": 0,
+        "combined": 100
+      }
+    }
+  }
+} 
