@@ -23,6 +23,7 @@ ROWNAME_MAP = {
     "mean=4, sd=1": (r"\mu_{\mbox{\scriptsize norm}}", r"4")
 }
 
+
 def prepare_power_table(
     output_dir: str,
     method: str,
@@ -69,18 +70,3 @@ def prepare_power_table(
     table = [list(row) for row in zip(*table)]  # transpose
     row_index = MultiIndex.from_tuples([ROWNAME_MAP[name] for name in rownames])
     return DataFrame(table, index=row_index, columns=col_index)
-
-
-
-
-df = prepare_power_table("outfiles", "nparLD", "period_1")
-n_row = len(table[0])
-for i in range(n_row):
-    row = [col[i] for col in table]
-    print(row)
-print()
-
-DataFrame(table)
-
-
-
