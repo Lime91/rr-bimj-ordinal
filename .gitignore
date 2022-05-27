@@ -1,2 +1,6 @@
 # virtual environment
 rr-venv/
+
+# pylatex output
+*.tex
+*.pdf

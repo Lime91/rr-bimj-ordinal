@@ -15,12 +15,12 @@ KEY_POWER = "power"
 KEY_REJECTION_RATE = "rejection_rate"
 
 ROWNAME_MAP = {
-    "meanlog=0.2, sdlog=1": "$\mu_{\mbox{\scriptsize log}}=0.2$",
-    "meanlog=0.6, sdlog=1": "$\mu_{\mbox{\scriptsize log}}=0.6$",
-    "meanlog=0.9, sdlog=1": "$\mu_{\mbox{\scriptsize log}}=0.9$",
-    "mean=2, sd=1": "$\mu_{\mbox{\scriptsize norm}}=2$",
-    "mean=3, sd=1": "$\mu_{\mbox{\scriptsize norm}}=3$",
-    "mean=4, sd=1": "$\mu_{\mbox{\scriptsize norm}}=4$"
+    "meanlog=0.2, sdlog=1": (r"\mu_{\mbox{\scriptsize log}}", r"0.2"),
+    "meanlog=0.6, sdlog=1": (r"\mu_{\mbox{\scriptsize log}}", r"0.6"),
+    "meanlog=0.9, sdlog=1": (r"\mu_{\mbox{\scriptsize log}}", r"0.9"),
+    "mean=2, sd=1": (r"\mu_{\mbox{\scriptsize norm}}", r"2"),
+    "mean=3, sd=1": (r"\mu_{\mbox{\scriptsize norm}}", r"3"),
+    "mean=4, sd=1": (r"\mu_{\mbox{\scriptsize norm}}", r"4")
 }
 
 def prepare_power_table(
@@ -46,7 +46,7 @@ def prepare_power_table(
     column_index_levels = ((method, ),
                            (SUBDIR_PRURITUS, SUBDIR_PAIN),
                            (SUBDIR_SCENARIO_1, SUBDIR_SCENARIO_2))
-    colnames = MultiIndex.from_product(column_index_levels)
+    col_index = MultiIndex.from_product(column_index_levels)
 
     table = []
     previous_rownames = []
@@ -67,13 +67,13 @@ def prepare_power_table(
         table.append(data)
 
     table = [list(row) for row in zip(*table)]  # transpose
-    rownames = [ROWNAME_MAP[name] for name in rownames]
-    return DataFrame(table, index=rownames, columns=colnames)
+    row_index = MultiIndex.from_tuples([ROWNAME_MAP[name] for name in rownames])
+    return DataFrame(table, index=row_index, columns=col_index)
 
 
 
 
-table = prepare_power_table("outfiles", "nparLD", "period_1")
+df = prepare_power_table("outfiles", "nparLD", "period_1")
 n_row = len(table[0])
 for i in range(n_row):
     row = [col[i] for col in table]
