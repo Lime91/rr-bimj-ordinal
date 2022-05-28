@@ -1,16 +1,10 @@
 from json import load
-from os.path import join
 from pandas import MultiIndex, DataFrame
+from typing import Iterable
+from os.path import join
 
 
 # global constants
-SUBDIR_PAIN = "Pain"
-SUBDIR_PRURITUS = "Pruritus"
-SUBDIR_SCENARIO_1 = "Scenario 1"
-SUBDIR_SCENARIO_2 = "Scenario 2"
-OUTFILE_NORM = "norm"
-OUTFILE_LNORM = "lnorm"
-
 KEY_POWER = "power"
 KEY_REJECTION_RATE = "rejection_rate"
 
@@ -25,37 +19,18 @@ ROWNAME_MAP = {
 
 
 def prepare_power_table(
-    output_dir: str,
-    method: str,
-    period: str) -> DataFrame:
-
-    pruritus_s1_norm = join(SUBDIR_PRURITUS, SUBDIR_SCENARIO_1, OUTFILE_NORM)
-    pruritus_s1_lnorm = join(SUBDIR_PRURITUS, SUBDIR_SCENARIO_1, OUTFILE_LNORM)
-    pruritus_s2_norm = join(SUBDIR_PRURITUS, SUBDIR_SCENARIO_2, OUTFILE_NORM)
-    pruritus_s2_lnorm = join(SUBDIR_PRURITUS, SUBDIR_SCENARIO_2, OUTFILE_LNORM)
-    pain_s1_norm = join(SUBDIR_PAIN, SUBDIR_SCENARIO_1, OUTFILE_NORM)
-    pain_s1_lnorm = join(SUBDIR_PAIN, SUBDIR_SCENARIO_1, OUTFILE_LNORM)
-    pain_s2_norm = join(SUBDIR_PAIN, SUBDIR_SCENARIO_2, OUTFILE_NORM)
-    pain_s2_lnorm = join(SUBDIR_PAIN, SUBDIR_SCENARIO_2, OUTFILE_LNORM)
-
-    file_columns = []
-    file_columns.append((pruritus_s1_norm, pruritus_s1_lnorm))
-    file_columns.append((pruritus_s2_norm, pruritus_s2_lnorm))
-    file_columns.append((pain_s1_norm, pain_s1_lnorm))
-    file_columns.append((pain_s2_norm, pain_s2_lnorm))
-
-    column_index_levels = ((method, ),
-                           (SUBDIR_PRURITUS, SUBDIR_PAIN),
-                           (SUBDIR_SCENARIO_1, SUBDIR_SCENARIO_2))
-    col_index = MultiIndex.from_product(column_index_levels)
+    outfile_directory: str,
+    outfile_columns: Iterable[Iterable[str]],
+    period: str,
+    column_index: MultiIndex) -> DataFrame:
 
     table = []
     previous_rownames = []
-    for file_column in file_columns:
+    for outfile_column in outfile_columns:
         rownames = []
         data = []
-        for file in file_column:
-            filename = join(output_dir, method, file + ".json")
+        for name in outfile_column:
+            filename = join(outfile_directory, name)
             raw_data = load(open(filename, "r"))
             power = raw_data[KEY_POWER]
             for parameters in power:
@@ -69,4 +44,4 @@ def prepare_power_table(
 
     table = [list(row) for row in zip(*table)]  # transpose
     row_index = MultiIndex.from_tuples([ROWNAME_MAP[name] for name in rownames])
-    return DataFrame(table, index=row_index, columns=col_index)
+    return DataFrame(table, index=row_index, columns=column_index)

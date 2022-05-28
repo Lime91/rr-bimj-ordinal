@@ -30,7 +30,7 @@ def fill_power_table_segment(
 
 def write_power_table(
     segments: Iterable[DataFrame],
-    name: str) -> None:
+    result_filename: str) -> None:
 
     # sanity check on column indices
     index = segments[0].columns.droplevel()
@@ -60,6 +60,6 @@ def write_power_table(
     # write to disk
     doc = Document()
     doc.append(table)
-    doc.generate_pdf(name, clean_tex=False)
+    doc.generate_pdf(result_filename, clean_tex=False)
 
 
