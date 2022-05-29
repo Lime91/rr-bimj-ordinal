@@ -4,3 +4,10 @@ rr-venv/
 # pylatex output
 *.tex
 *.pdf
+
+# outfiles and results
+raw-output/
+tables/
+
+# python
+*.pyc
