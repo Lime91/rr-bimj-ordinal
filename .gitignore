@@ -10,4 +10,4 @@ raw-output/
 tables/
 
 # python
-*.pyc
+__pycache__/
