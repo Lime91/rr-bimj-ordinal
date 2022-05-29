@@ -36,7 +36,10 @@ def prepare_power_table(
             for parameters in power:
                 rownames.append(parameters)
                 rejection_rate = power[parameters][KEY_REJECTION_RATE]
-                data.append(rejection_rate[period])
+                rr = rejection_rate[period]
+                if isinstance(rr, float):
+                    rr = round(rr, 4)
+                data.append(rr)
         if len(previous_rownames) > 0:  # sanity check
             assert previous_rownames == rownames
         previous_rownames = rownames
