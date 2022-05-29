@@ -3,7 +3,7 @@ from subprocess import Popen, PIPE
 from pandas import MultiIndex
 from os import makedirs
 from os.path import join, exists, dirname
-from utils import prepare_power_table, write_power_table
+from utils import prepare_power_table_segment, write_power_table
 from typing import Iterable
 
 # simulation program
@@ -55,7 +55,12 @@ METHOD_MAP = {  # maps method names (=table headers) to command line arguments
     "univariate unmatched GPC": "univariate-unmatched-gpc",
     "prioritized matched GPC": "prioritized-matched-gpc",
     "prioritized unmatched GPC": "prioritized-unmatched-gpc",
-    "non-prioritized unmatched GPC": "non-prioritized-unmatched-gpc"
+    "non-prioritized unmatched GPC": "non-prioritized-unmatched-gpc",
+    "one-sided univariate matched GPC": "univariate-matched-gpc",
+    "one-sided univariate unmatched GPC": "univariate-unmatched-gpc",
+    "one-sided prioritized matched GPC": "prioritized-matched-gpc",
+    "one-sided prioritized unmatched GPC": "prioritized-unmatched-gpc",
+    "one-sided non-prioritized unmatched GPC": "non-prioritized-unmatched-gpc"
 }
 
 def run_power_simulations(
@@ -95,9 +100,9 @@ def generate_power_table(
     table_segments = []
     for method_name in method_names:
         # run simulations
-        method = METHOD_MAP[method_name]
-        raw_output_dir = join(DIR_RAW_OUTPUT, method)
+        raw_output_dir = join(DIR_RAW_OUTPUT, method_name)
         if run_simulations:
+            method = METHOD_MAP[method_name]
             run_power_simulations(method, raw_output_dir, extra_args)
 
         # build and write table
@@ -106,7 +111,7 @@ def generate_power_table(
             (SUBDIR_PRURITUS, SUBDIR_PAIN),
             (SUBDIR_SCENARIO_1, SUBDIR_SCENARIO_2))
         column_index = MultiIndex.from_product(column_index_levels)
-        df = prepare_power_table(
+        df = prepare_power_table_segment(
             raw_output_dir, POWER_TABLE_FILE_COLUMNS, period, column_index)
         table_segments.append(df)
     # write table to disc
@@ -114,6 +119,7 @@ def generate_power_table(
 
 
 if __name__ == "__main__":
+
     # nparLD power
     methods_1 = ["nparLD"]
     caption_1 = \
@@ -158,10 +164,10 @@ if __name__ == "__main__":
     generate_power_table(methods_4, "combined", 4, caption_4)
 
     methods_9 = [
-        "univariate matched GPC",
-        "univariate unmatched GPC",
-        "prioritized matched GPC",
-        "prioritized unmatched GPC"]
+        "one-sided univariate matched GPC",
+        "one-sided univariate unmatched GPC",
+        "one-sided prioritized matched GPC",
+        "one-sided prioritized unmatched GPC"]
     extra_args_9 = "-u 1"  # one-sided gpc test
     caption_9 = \
         r"Power simulation results for the ordinal outcomes ``pruritus'' and " \
@@ -172,7 +178,7 @@ if __name__ == "__main__":
     generate_power_table(methods_9, "combined", 9, caption_9,
                          extra_args=extra_args_9)
 
-    methods_10 = ["non-prioritized unmatched GPC"]
+    methods_10 = ["one-sided non-prioritized unmatched GPC"]
     extra_args_10 = "-u 1"  # one-sided gpc test
     caption_10 = \
         r"Power simulation results for the ordinal outcomes ``pruritus'' and " \

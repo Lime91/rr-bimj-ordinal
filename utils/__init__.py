@@ -1,2 +1,2 @@
-from .prepare_tables import prepare_power_table
+from .prepare_tables import prepare_power_table_segment
 from .write_latex import write_power_table
