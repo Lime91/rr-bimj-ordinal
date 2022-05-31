@@ -7,7 +7,7 @@ from utils import prepare_alpha_error_table, write_alpha_error_table
 from typing import Iterable, List, Dict
 
 # simulation program
-R_PROGRAM = ["Rscript", "./ebstatmax-subtree/diacerein.R"]
+R_PROGRAM = ["Rscript", "./ebstatmax/diacerein.R"]
 
 # output directory structure
 DIR_RAW_OUTPUT = "raw-output"
