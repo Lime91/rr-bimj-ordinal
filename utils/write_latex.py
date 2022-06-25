@@ -1,4 +1,4 @@
-from pylatex import Document, MultiColumn, Tabular, Table
+from pylatex import Document, MultiColumn, Tabular, Table, Package
 from pylatex.utils import NoEscape, bold
 from typing import Iterable
 from pandas import DataFrame
@@ -66,6 +66,7 @@ def write_power_table(
     table.add_caption(NoEscape(caption))
     table.append(tabular)
     doc = Document()
+    doc.packages.append(Package("xcolor"))
     doc.append(NoEscape(r"\setcounter{table}{" + str(number - 1) + r"}"))
     doc.append(table)
     if not exists(result_directory) and result_directory != "":
@@ -107,6 +108,7 @@ def write_alpha_error_table(
     table.add_caption(NoEscape(caption))
     table.append(tabular)
     doc = Document()
+    doc.packages.append(Package("xcolor"))
     doc.append(NoEscape(r"\setcounter{table}{" + str(number - 1) + r"}"))
     doc.append(table)
     if not exists(result_directory) and result_directory != "":

@@ -1,5 +1,5 @@
 
-from subprocess import Popen, PIPE
+from subprocess import Popen, PIPE, run
 from os import makedirs
 from os.path import join, exists, dirname
 from utils import prepare_power_table_segment, write_power_table
@@ -46,7 +46,7 @@ POWER_TABLE_FILE_COLUMNS.append((PAIN_S2_NORM, PAIN_S2_LNORM))
 POWER_TABLE_FILE_ROW = (PRURITUS_ALPHA_ERROR, PAIN_ALPHA_ERROR)
 
 # simulation settings
-BASIC_SETTINGS = "-r"  # subtract and discard baseline
+BASIC_SETTINGS = "-r "  # subtract and discard baseline
 POWER_SIMULATIONS = {
     BASIC_SETTINGS + "-t Pruritus -s 1 -e lnorm": PRURITUS_S1_LNORM,
     BASIC_SETTINGS + "-t Pruritus -s 2 -e lnorm": PRURITUS_S2_LNORM,
@@ -165,7 +165,15 @@ def generate_alpha_error_table(
 
 if __name__ == "__main__":
 
-    caption_prefix = r"\texttt{[Baseline subtracted and discarded]} "
+    # print simUtils version
+    command = "suppressPackageStartupMessages(require(simUtils)); " \
+              "cat(sessionInfo()$otherPkgs$simUtils$Packaged)"
+    p = run(["Rscript", "-e", command], capture_output=True, text=True)
+    print("\nsimUtils package installation time:", p.stdout, "\n")
+
+
+    caption_prefix = \
+        r"\colorbox{lightgray}{\texttt{baseline subtracted and discarded}} "
 
     ########################
     ####  Type I Error  ####
