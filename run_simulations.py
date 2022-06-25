@@ -46,19 +46,20 @@ POWER_TABLE_FILE_COLUMNS.append((PAIN_S2_NORM, PAIN_S2_LNORM))
 POWER_TABLE_FILE_ROW = (PRURITUS_ALPHA_ERROR, PAIN_ALPHA_ERROR)
 
 # simulation settings
+BASIC_SETTINGS = "-r"  # subtract and discard baseline
 POWER_SIMULATIONS = {
-    "-t Pruritus -s 1 -e lnorm": PRURITUS_S1_LNORM,
-    "-t Pruritus -s 2 -e lnorm": PRURITUS_S2_LNORM,
-    "-t Pruritus -s 1 -e norm": PRURITUS_S1_NORM,
-    "-t Pruritus -s 2 -e norm": PRURITUS_S2_NORM,
-    "-t Pain -s 1 -e lnorm": PAIN_S1_LNORM,
-    "-t Pain -s 2 -e lnorm": PAIN_S2_LNORM,
-    "-t Pain -s 1 -e norm": PAIN_S1_NORM,
-    "-t Pain -s 2 -e norm": PAIN_S2_NORM
+    BASIC_SETTINGS + "-t Pruritus -s 1 -e lnorm": PRURITUS_S1_LNORM,
+    BASIC_SETTINGS + "-t Pruritus -s 2 -e lnorm": PRURITUS_S2_LNORM,
+    BASIC_SETTINGS + "-t Pruritus -s 1 -e norm": PRURITUS_S1_NORM,
+    BASIC_SETTINGS + "-t Pruritus -s 2 -e norm": PRURITUS_S2_NORM,
+    BASIC_SETTINGS + "-t Pain -s 1 -e lnorm": PAIN_S1_LNORM,
+    BASIC_SETTINGS + "-t Pain -s 2 -e lnorm": PAIN_S2_LNORM,
+    BASIC_SETTINGS + "-t Pain -s 1 -e norm": PAIN_S1_NORM,
+    BASIC_SETTINGS + "-t Pain -s 2 -e norm": PAIN_S2_NORM
 }
 ALPHA_ERROR_SIMULATIONS = {
-    "-t Pruritus": PRURITUS_ALPHA_ERROR,
-    "-t Pain": PAIN_ALPHA_ERROR
+    BASIC_SETTINGS + "-t Pruritus": PRURITUS_ALPHA_ERROR,
+    BASIC_SETTINGS + "-t Pain": PAIN_ALPHA_ERROR
 }
 
 
@@ -164,6 +165,8 @@ def generate_alpha_error_table(
 
 if __name__ == "__main__":
 
+    caption_prefix = r"\texttt{[Baseline subtracted and discarded]} "
+
     ########################
     ####  Type I Error  ####
     ########################
@@ -173,7 +176,7 @@ if __name__ == "__main__":
         r" and ``pain'' based on 5000 permutation runs using matched and " \
         r"unmatched univariate/prioritized/non-prioritized GPC (one-sided " \
         r"and two-sided) and nparLD split into time period 1 and 2 (two-sided)."
-    generate_alpha_error_table(7, caption_7)
+    generate_alpha_error_table(7, caption_prefix + caption_7)
 
 
     ########################
@@ -186,7 +189,7 @@ if __name__ == "__main__":
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the method nparLD."
-    generate_power_table(methods_1, "period_1", 1, caption_1)
+    generate_power_table(methods_1, "period_1", 1, caption_prefix + caption_1)
 
     methods_8 = ["nparld"]
     caption_8 = \
@@ -194,7 +197,7 @@ if __name__ == "__main__":
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"nparLD for period 2 data."
-    generate_power_table(methods_8, "period_2", 8, caption_8,
+    generate_power_table(methods_8, "period_2", 8, caption_prefix + caption_8,
                          run_simulations=False)
 
 
@@ -208,7 +211,7 @@ if __name__ == "__main__":
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the two-sided univariate matched and unmatched GPC method."
-    generate_power_table(methods_2, "combined", 2, caption_2)
+    generate_power_table(methods_2, "combined", 2, caption_prefix + caption_2)
 
     methods_3 = ["prioritized-matched-gpc", "prioritized-unmatched-gpc"]
     caption_3 = \
@@ -216,7 +219,7 @@ if __name__ == "__main__":
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the two-sided prioritized matched and unmatched GPC method."
-    generate_power_table(methods_3, "combined", 3, caption_3)
+    generate_power_table(methods_3, "combined", 3, caption_prefix + caption_3)
 
     methods_4 = ["non-prioritized-unmatched-gpc"]
     caption_4 = \
@@ -224,7 +227,7 @@ if __name__ == "__main__":
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the two-sided non-prioritized unmatched GPC method."
-    generate_power_table(methods_4, "combined", 4, caption_4)
+    generate_power_table(methods_4, "combined", 4, caption_prefix + caption_4)
 
     methods_9 = [
         "univariate-matched-gpc",
@@ -237,7 +240,7 @@ if __name__ == "__main__":
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the one-sided univariate/prioritized matched and unmatched GPC " \
         r"method."
-    generate_power_table(methods_9, "combined", 9, caption_9,
+    generate_power_table(methods_9, "combined", 9, caption_prefix + caption_9,
                          one_sided=True)
 
     methods_10 = ["non-prioritized-unmatched-gpc"]
@@ -246,5 +249,5 @@ if __name__ == "__main__":
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the one-sided non-prioritized unmatched GPC method."
-    generate_power_table(methods_10, "combined", 10, caption_10,
-                         one_sided=True)
+    generate_power_table(methods_10, "combined", 10,
+                         caption_prefix + caption_10, one_sided=True)
