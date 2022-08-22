@@ -7,6 +7,7 @@
 # get target variable from command line
 args <- commandArgs(trailingOnly=TRUE)
 TARGET <- ifelse(length(args) > 0, args[[1]], "Pain")
+cat("target variable:", TARGET, "\n", file=stderr())
 
 
 # load simUtils package
