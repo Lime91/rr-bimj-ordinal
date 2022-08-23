@@ -67,7 +67,7 @@ ALPHA_ERROR_SIMULATIONS = {
 }
 
 
-def run_simulations(
+def perform_simulations(
     method: str,
     simulation_settings: Dict[str, str],
     output_dir: str,
@@ -120,7 +120,7 @@ def generate_power_table(
             subdir = "baseline_adjusted__" + subdir
         raw_output_dir = join(DIR_RAW_OUTPUT, subdir)
         if run_simulations:
-            run_simulations(
+            perform_simulations(
                 method, POWER_SIMULATIONS, raw_output_dir, extra_args)
         # build and write table
         df = prepare_power_table_segment(
@@ -157,7 +157,7 @@ def generate_alpha_error_table(
             else:
                 subdir = method
             output_dir = join(DIR_RAW_OUTPUT, subdir)
-            outfiles = run_simulations(
+            outfiles = perform_simulations(
                 method, ALPHA_ERROR_SIMULATIONS, output_dir, extra_args)
             raw_file_rows.extend([outfiles] * 2)
             basename = "nparLD two-sided Period "
@@ -172,10 +172,10 @@ def generate_alpha_error_table(
                 os_subdir = "one-sided-" + method
             one_sided_output_dir = join(DIR_RAW_OUTPUT, os_subdir)
             two_sided_output_dir = join(DIR_RAW_OUTPUT, subdir)
-            one_sided_outfiles = run_simulations(
+            one_sided_outfiles = perform_simulations(
                 method, ALPHA_ERROR_SIMULATIONS, one_sided_output_dir,
                 extra_args + " -u 1")
-            two_sided_outfiles = run_simulations(
+            two_sided_outfiles = perform_simulations(
                 method, ALPHA_ERROR_SIMULATIONS, two_sided_output_dir,
                 extra_args)
             raw_file_rows.append(one_sided_outfiles)
