@@ -2,12 +2,15 @@
 from subprocess import Popen, PIPE, run
 from os import makedirs
 from os.path import join, exists, dirname
+from pandas import read_csv
 from utils import prepare_power_table_segment, write_power_table
 from utils import prepare_alpha_error_table, write_alpha_error_table
+from utils import write_wins_table
 from typing import Iterable, List, Dict
 
 # simulation program
 R_PROGRAM = ["Rscript", "./ebstatmax/diacerein.R"]
+R_WINS_TABLE_SCRIPT = ["Rscript", "./script/wins_table.R"]
 
 # output directory structure
 DIR_RAW_OUTPUT = "raw-output"
@@ -63,7 +66,7 @@ ALPHA_ERROR_SIMULATIONS = {
 }
 
 
-def run_simulation_framework(
+def run_simulations(
     method: str,
     simulation_settings: Dict[str, str],
     output_dir: str,
@@ -112,7 +115,7 @@ def generate_power_table(
             subdir = method
         raw_output_dir = join(DIR_RAW_OUTPUT, subdir)
         if run_simulations:
-            run_simulation_framework(
+            run_simulations(
                 method, POWER_SIMULATIONS, raw_output_dir, extra_args)
         # build and write table
         df = prepare_power_table_segment(
@@ -140,7 +143,7 @@ def generate_alpha_error_table(
     for method in methods:
         if method == "nparld":
             output_dir = join(DIR_RAW_OUTPUT, method)
-            outfiles = run_simulation_framework(
+            outfiles = run_simulations(
                 method, ALPHA_ERROR_SIMULATIONS, output_dir)
             raw_file_rows.extend([outfiles] * 2)
             basename = "nparLD two-sided Period "
@@ -149,9 +152,9 @@ def generate_alpha_error_table(
         else:
             one_sided_output_dir = join(DIR_RAW_OUTPUT, "one-sided-" + method)
             two_sided_output_dir = join(DIR_RAW_OUTPUT, method)
-            one_sided_outfiles = run_simulation_framework(
+            one_sided_outfiles = run_simulations(
                 method, ALPHA_ERROR_SIMULATIONS, one_sided_output_dir, "-u 1")
-            two_sided_outfiles = run_simulation_framework(
+            two_sided_outfiles = run_simulations(
                 method, ALPHA_ERROR_SIMULATIONS, two_sided_output_dir)
             raw_file_rows.append(one_sided_outfiles)
             raw_file_rows.append(two_sided_outfiles)
@@ -163,6 +166,20 @@ def generate_alpha_error_table(
     write_alpha_error_table(df, DIR_RESULT_TABLES, number, caption)
 
 
+def generate_wins_table(
+    number: int,
+    caption: str) -> None:
+
+    pruritus_cmd = R_WINS_TABLE_SCRIPT + ["Pruritus"]
+    pruritus_proc = Popen(pruritus_cmd, stderr=PIPE, stdout=PIPE, text=True)
+    pruritus_df = read_csv(
+        pruritus_proc.stdout, header=0, index_col=0, dtype=str)
+    pain_cmd = R_WINS_TABLE_SCRIPT + ["Pain"]
+    pain_proc = Popen(pain_cmd, stderr=PIPE, stdout=PIPE, text=True)
+    pain_df = read_csv(pain_proc.stdout, header=0, index_col=0, dtype=str)
+    write_wins_table(pruritus_df, pain_df, DIR_RESULT_TABLES, number, caption)
+
+
 if __name__ == "__main__":
 
     # print simUtils version
@@ -171,9 +188,20 @@ if __name__ == "__main__":
     p = run(["Rscript", "-e", command], capture_output=True, text=True)
     print("\nsimUtils package installation time:", p.stdout, "\n")
 
+    caption_prefix = r""
 
-    caption_prefix = \
-        r"\colorbox{lightgray}{\texttt{baseline subtracted and discarded}} "
+    ############################
+    ####  Wins/Ties/Losses  ####
+    ############################
+
+    caption_11 = \
+        r"Net benefit (95\% CI) and $p$-value (one-sided) for the GPC " \
+        r"variants applied to the original dataset for the ordinal outcome " \
+        r"``pruritus'' and ``pain'', with the following prioritization (in " \
+        r"descending order): time point W4=post treatment, FU=follow up, " \
+        r"W2=2 weeks, W0 = baseline"
+    generate_wins_table(11, caption_11)
+
 
     ########################
     ####  Type I Error  ####
