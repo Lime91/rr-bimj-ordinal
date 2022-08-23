@@ -1,4 +1,4 @@
-from pylatex import Document, MultiColumn, Tabular, Table, Package
+from pylatex import Document, MultiColumn, Tabular, Table, Center
 from pylatex.utils import NoEscape, bold
 from typing import Iterable
 from pandas import DataFrame, isna
@@ -15,6 +15,7 @@ def write_to_disc(
     table = Table()
     table.append(NoEscape(r"\small"))
     table.add_caption(NoEscape(caption))
+    table.append(NoEscape(r"\centering"))
     table.append(tabular)
     doc = Document(documentclass="article",
                    geometry_options=["left=25mm", "top=25mm"])
@@ -36,7 +37,6 @@ def fill_power_table_segment(
     tabular.add_row(
         [MultiColumn(1), MultiColumn(4, align="|c|", data=bold(header))])
     tabular.add_hline()
-
     # write rows
     for outer_level in df.index.levels[0]:
         tabular.add_hline()
@@ -60,7 +60,6 @@ def write_power_table(
     # sanity check on column indices
     index = segments[0].columns.droplevel()
     assert all([index.equals(df.columns.droplevel()) for df in segments[1:]])
-
     # create table header
     tabular = Tabular("ccccc")
     tabular.add_row([MultiColumn(1), MultiColumn(4, data=bold("Power"))])
@@ -77,11 +76,9 @@ def write_power_table(
         MultiColumn(1, align="|c|", data=index.levels[1][0]),
         MultiColumn(1, align="|c|", data=index.levels[1][1])])
     tabular.append(NoEscape(r"\cline{2-5}"))
-
     # create table body
     for df in segments:
         fill_power_table_segment(tabular, df)
-
     write_to_disc(tabular, result_directory, number, caption)
 
 
@@ -103,7 +100,6 @@ def write_alpha_error_table(
         header.append(MultiColumn(1, align="|c|", data=NoEscape(colname)))
     tabular.add_row([MultiColumn(1)] + header)
     tabular.add_hline()
-
     # create table body
     for rowname in df.index:
         row = []
@@ -112,7 +108,6 @@ def write_alpha_error_table(
         tabular.add_row(
             [MultiColumn(1, align="|c|", data=NoEscape(rowname))] + row)
         tabular.add_hline()
-
     write_to_disc(tabular, result_directory, number, caption)
 
 
@@ -129,7 +124,6 @@ def write_wins_table(
     header = [bold(NoEscape(colname)) for colname in pruritus_df.columns]
     tabular.add_row([""] + header)
     tabular.add_hline()
-
     # create table body
     dfs = {"Pruritus": pruritus_df, "Pain": pain_df}
     for key in dfs:
@@ -143,12 +137,41 @@ def write_wins_table(
                 row.append(NoEscape(rowname))
             else:
                 row.append(NoEscape("\\rule{11em}{0pt}" + rowname))
-            for value in df.iloc[i, ]:
+            for value in df.iloc[i, :]:
                 if isna(value):
                     row.append("")
                 else:
                     row.append(NoEscape(value))
             tabular.add_row(row)
         tabular.add_hline()
+    write_to_disc(tabular, result_directory, number, caption)
 
+
+def write_pvalue_table(
+        pruritus_df: DataFrame,
+        pain_df: DataFrame,
+        result_directory: str,
+        number: int,
+        caption: str) -> None:
+
+    # create table header
+    spec = "c|cc"
+    tabular = Tabular(spec)
+    header = [bold(NoEscape(colname)) for colname in pruritus_df.columns]
+    tabular.add_row([""] + header)
+    tabular.add_hline()
+    # create table body
+    dfs = {"Pruritus": pruritus_df, "Pain": pain_df}
+    for key in dfs:
+        tabular.add_row(["", MultiColumn(2, data=bold(NoEscape(key)))])
+        tabular.add_hline()
+        df = dfs[key]
+        for i in range(df.shape[0]):
+            row = []
+            rowname = df.index[i]
+            row.append(NoEscape(rowname))
+            for value in df.iloc[i, :]:
+                row.append(NoEscape(value))
+            tabular.add_row(row)
+        tabular.add_hline()
     write_to_disc(tabular, result_directory, number, caption)

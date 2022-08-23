@@ -5,12 +5,13 @@ from os.path import join, exists, dirname
 from pandas import read_csv
 from utils import prepare_power_table_segment, write_power_table
 from utils import prepare_alpha_error_table, write_alpha_error_table
-from utils import write_wins_table
+from utils import write_wins_table, write_pvalue_table
 from typing import Iterable, List, Dict
 
 # simulation program
 R_PROGRAM = ["Rscript", "./ebstatmax/diacerein.R"]
 R_WINS_TABLE_SCRIPT = ["Rscript", "./script/wins_table.R"]
+R_PVALUE_TABLE_SCRIPT = ["Rscript", "./script/p_values_table.R"]
 
 # output directory structure
 DIR_RAW_OUTPUT = "raw-output"
@@ -180,6 +181,21 @@ def generate_wins_table(
     write_wins_table(pruritus_df, pain_df, DIR_RESULT_TABLES, number, caption)
 
 
+def generate_pvalue_table(
+    method: str,  # either "gpc" or "nparld"
+    number: int,
+    caption: str) -> None:
+
+    pruritus_cmd = R_PVALUE_TABLE_SCRIPT + [method, "Pruritus"]
+    pruritus_proc = Popen(pruritus_cmd, stderr=PIPE, stdout=PIPE, text=True)
+    pruritus_df = read_csv(
+        pruritus_proc.stdout, header=0, index_col=0, dtype=str)
+    pain_cmd = R_PVALUE_TABLE_SCRIPT + [method, "Pain"]
+    pain_proc = Popen(pain_cmd, stderr=PIPE, stdout=PIPE, text=True)
+    pain_df = read_csv(pain_proc.stdout, header=0, index_col=0, dtype=str)
+    write_pvalue_table(pruritus_df, pain_df, DIR_RESULT_TABLES, number, caption)
+
+
 if __name__ == "__main__":
 
     # print simUtils version
@@ -190,6 +206,24 @@ if __name__ == "__main__":
 
     caption_prefix = r""
 
+
+    ############################
+    ####  Wins/Ties/Losses  ####
+    ############################
+
+    caption_5 = \
+        r"Resulting interaction effect of time and group for the ordinal " \
+        r"outcome ``pruritus'' and ``pain'' in the original dataset using " \
+        r"nparLD with the ANOVA-type statistics."
+    generate_pvalue_table("nparld", 5, caption_5)
+
+    caption_6 = \
+        r"Resulting two-sided $p$-value and test statistic for the GPC " \
+        r"variants applied to the original dataset for the ordinal outcome " \
+        r"``pruritus'' and ``pain''."
+    generate_pvalue_table("gpc", 6, caption_6)
+
+
     ############################
     ####  Wins/Ties/Losses  ####
     ############################
@@ -199,10 +233,10 @@ if __name__ == "__main__":
         r"variants applied to the original dataset for the ordinal outcome " \
         r"``pruritus'' and ``pain'', with the following prioritization (in " \
         r"descending order): time point W4=post treatment, FU=follow up, " \
-        r"W2=2 weeks, W0 = baseline"
+        r"W2=2 weeks, W0=baseline."
     generate_wins_table(11, caption_11)
 
-
+    
     ########################
     ####  Type I Error  ####
     ########################
