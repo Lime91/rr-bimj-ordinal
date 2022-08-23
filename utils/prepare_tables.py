@@ -34,8 +34,8 @@ TARGET_MAP = {
     "Pruritus": "Pruritus"
 }
 SCENARIO_MAP = {
-    1: "Secenario 1",
-    2: "Secenario 2",
+    1: "Scenario 1",
+    2: "Scenario 2",
 }
 
 
