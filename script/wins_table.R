@@ -1,8 +1,9 @@
 #!/usr/bin/Rscript
 
-############################################################################
-# this script is designed to reproduce Table 11 of the ordinal outcome paper
-############################################################################
+################################################################################
+# this script is designed to reproduce a segment of the wins/losses/ties table
+# of the ordinal outcome paper
+################################################################################
 
 # get target variable from command line
 args <- commandArgs(trailingOnly=TRUE)
@@ -12,8 +13,7 @@ cat("target variable:", TARGET, "\n", file=stderr())
 
 # load simUtils package
 if (!suppressPackageStartupMessages(require(simUtils)))
-  suppressMessages(devtools::load_all("../../ebstatmax/simUtils"))
-devtools::load_all("../../ebstatmax/simUtils")
+  suppressMessages(devtools::load_all("../ebstatmax/simUtils"))
 
 
 # global parameters for GPC
@@ -78,7 +78,7 @@ get_combined_df <- function(target) {
   df <- rbind(df, rep("", ncol(df)))
   df[nrow(df), 1] <- "unmatched non-prioritized GPC"
   df <- rbind(df, dfs$unmatched_non_prioritized)
-  names(df) <- c("name", "#wins", "#losses", "#ties", "net benefit (95%CI)", "$p$-value one-sided")
+  names(df) <- c("name", "\\#wins", "\\#losses", "\\#ties", "net benefit (95\\%CI)", "$p$-value one-sided")
   df
 }
 
@@ -88,6 +88,6 @@ write.table(
   get_combined_df(TARGET),
   quote=TRUE,
   sep=",",
-  dec= "../../ebstatmax/misc",
+  dec= ".",
   row.names=FALSE
 )
