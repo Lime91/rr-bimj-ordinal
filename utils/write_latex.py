@@ -1,9 +1,30 @@
 from pylatex import Document, MultiColumn, Tabular, Table, Package
 from pylatex.utils import NoEscape, bold
 from typing import Iterable
-from pandas import DataFrame
+from pandas import DataFrame, isna
 from os import makedirs
 from os.path import exists, join
+
+
+def write_to_disc(
+    tabular: Tabular,
+    result_directory: str,
+    number: int,
+    caption: str) -> None:
+
+    table = Table()
+    table.append(NoEscape(r"\small"))
+    table.add_caption(NoEscape(caption))
+    table.append(tabular)
+    doc = Document(documentclass="article",
+                   geometry_options=["left=25mm", "top=25mm"])
+    # doc.packages.append(Package("xcolor"))
+    doc.append(NoEscape(r"\setcounter{table}{" + str(number - 1) + r"}"))
+    doc.append(table)
+    if not exists(result_directory) and result_directory != "":
+        makedirs(result_directory)
+    result_filename = join(result_directory, "table_" + str(number))
+    doc.generate_pdf(result_filename, clean_tex=False)
 
 
 def fill_power_table_segment(
@@ -61,18 +82,7 @@ def write_power_table(
     for df in segments:
         fill_power_table_segment(tabular, df)
 
-    # add caption + number and write to disc
-    table = Table()
-    table.add_caption(NoEscape(caption))
-    table.append(tabular)
-    doc = Document()
-    doc.packages.append(Package("xcolor"))
-    doc.append(NoEscape(r"\setcounter{table}{" + str(number - 1) + r"}"))
-    doc.append(table)
-    if not exists(result_directory) and result_directory != "":
-        makedirs(result_directory)
-    result_filename = join(result_directory, "table_" + str(number))
-    doc.generate_pdf(result_filename, clean_tex=False)
+    write_to_disc(tabular, result_directory, number, caption)
 
 
 def write_alpha_error_table(
@@ -103,15 +113,42 @@ def write_alpha_error_table(
             [MultiColumn(1, align="|c|", data=NoEscape(rowname))] + row)
         tabular.add_hline()
 
-    # add caption + number and write to disc
-    table = Table()
-    table.add_caption(NoEscape(caption))
-    table.append(tabular)
-    doc = Document()
-    doc.packages.append(Package("xcolor"))
-    doc.append(NoEscape(r"\setcounter{table}{" + str(number - 1) + r"}"))
-    doc.append(table)
-    if not exists(result_directory) and result_directory != "":
-        makedirs(result_directory)
-    result_filename = join(result_directory, "table_" + str(number))
-    doc.generate_pdf(result_filename, clean_tex=False)
+    write_to_disc(tabular, result_directory, number, caption)
+
+
+def write_wins_table(
+        pruritus_df: DataFrame,
+        pain_df: DataFrame,
+        result_directory: str,
+        number: int,
+        caption: str) -> None:
+
+    # create table header
+    spec = "l|cccrc"
+    tabular = Tabular(spec)
+    header = [bold(NoEscape(colname)) for colname in pruritus_df.columns]
+    tabular.add_row([""] + header)
+    tabular.add_hline()
+
+    # create table body
+    dfs = {"Pruritus": pruritus_df, "Pain": pain_df}
+    for key in dfs:
+        tabular.add_row(["", MultiColumn(5, data=bold(NoEscape(key)))])
+        tabular.add_hline()
+        df = dfs[key]
+        for i in range(df.shape[0]):
+            row = []
+            rowname = df.index[i]
+            if "GPC" in rowname:
+                row.append(NoEscape(rowname))
+            else:
+                row.append(NoEscape("\\rule{11em}{0pt}" + rowname))
+            for value in df.iloc[i, ]:
+                if isna(value):
+                    row.append("")
+                else:
+                    row.append(NoEscape(value))
+            tabular.add_row(row)
+        tabular.add_hline()
+
+    write_to_disc(tabular, result_directory, number, caption)

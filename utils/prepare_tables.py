@@ -1,5 +1,5 @@
 from json import load
-from pandas import MultiIndex, DataFrame, Index
+from pandas import MultiIndex, DataFrame
 from typing import Iterable
 from os.path import join
 
@@ -122,5 +122,4 @@ def prepare_alpha_error_table(
             assert previous_colnames == colnames
         previous_colnames = colnames
         table.append(data)
-
     return DataFrame(table, index=rownames, columns=colnames)
