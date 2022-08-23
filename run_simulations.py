@@ -103,7 +103,8 @@ def generate_power_table(
     number: int,
     caption: str,
     run_simulations=True,
-    one_sided=False) -> None:
+    one_sided=False,
+    baseline_adjustion=False) -> None:
 
     table_segments = []
     for method in methods:
@@ -114,6 +115,9 @@ def generate_power_table(
         else:
             extra_args = ""
             subdir = method
+        if baseline_adjustion:
+            extra_args = "-r " + extra_args
+            subdir = "baseline_adjusted__" + subdir
         raw_output_dir = join(DIR_RAW_OUTPUT, subdir)
         if run_simulations:
             run_simulations(
@@ -128,7 +132,8 @@ def generate_power_table(
 
 def generate_alpha_error_table(
     number: int,
-    caption: str) -> None:
+    caption: str,
+    baseline_adjustion=False) -> None:
 
     methods = [
         "nparld",
@@ -142,21 +147,37 @@ def generate_alpha_error_table(
     periods = []
     rownames = []
     for method in methods:
+        if baseline_adjustion:
+            extra_args = "-r "
+        else:
+            extra_args = ""
         if method == "nparld":
-            output_dir = join(DIR_RAW_OUTPUT, method)
+            if baseline_adjustion:
+                subdir = "baseline_adjusted__" + method
+            else:
+                subdir = method
+            output_dir = join(DIR_RAW_OUTPUT, subdir)
             outfiles = run_simulations(
-                method, ALPHA_ERROR_SIMULATIONS, output_dir)
+                method, ALPHA_ERROR_SIMULATIONS, output_dir, extra_args)
             raw_file_rows.extend([outfiles] * 2)
             basename = "nparLD two-sided Period "
             rownames.extend([basename + "1", basename + "2"])
             periods.extend(["period_1", "period_2"])
         else:
-            one_sided_output_dir = join(DIR_RAW_OUTPUT, "one-sided-" + method)
-            two_sided_output_dir = join(DIR_RAW_OUTPUT, method)
+            if baseline_adjustion:
+                subdir = "baseline_adjusted__" + method
+                os_subdir = "baseline_adjusted__one-sided-" + method
+            else:
+                subdir = method
+                os_subdir = "one-sided-" + method
+            one_sided_output_dir = join(DIR_RAW_OUTPUT, os_subdir)
+            two_sided_output_dir = join(DIR_RAW_OUTPUT, subdir)
             one_sided_outfiles = run_simulations(
-                method, ALPHA_ERROR_SIMULATIONS, one_sided_output_dir, "-u 1")
+                method, ALPHA_ERROR_SIMULATIONS, one_sided_output_dir,
+                extra_args + " -u 1")
             two_sided_outfiles = run_simulations(
-                method, ALPHA_ERROR_SIMULATIONS, two_sided_output_dir)
+                method, ALPHA_ERROR_SIMULATIONS, two_sided_output_dir,
+                extra_args)
             raw_file_rows.append(one_sided_outfiles)
             raw_file_rows.append(two_sided_outfiles)
             basename = method.replace("-", " ").replace("gpc", "GPC")
@@ -204,8 +225,6 @@ if __name__ == "__main__":
     p = run(["Rscript", "-e", command], capture_output=True, text=True)
     print("\nsimUtils package installation time:", p.stdout, "\n")
 
-    caption_prefix = r""
-
 
     ############################
     ####  Wins/Ties/Losses  ####
@@ -236,7 +255,7 @@ if __name__ == "__main__":
         r"W2=2 weeks, W0=baseline."
     generate_wins_table(11, caption_11)
 
-    
+
     ########################
     ####  Type I Error  ####
     ########################
@@ -246,7 +265,15 @@ if __name__ == "__main__":
         r" and ``pain'' based on 5000 permutation runs using matched and " \
         r"unmatched univariate/prioritized/non-prioritized GPC (one-sided " \
         r"and two-sided) and nparLD split into time period 1 and 2 (two-sided)."
-    generate_alpha_error_table(7, caption_prefix + caption_7)
+    generate_alpha_error_table(7, caption_7)
+
+    caption_12 = \
+        r"\textit{Change from baseline approach:} Type I error simulation " \
+        r"result for the ordinal outcome ``pruritus'' and ``pain'' based " \
+        r"on 5000 permutation runs using matched and unmatched " \
+        r"univariate/prioritized/non-prioritized GPC (one-sided and " \
+        r"two-sided) and nparLD split into time period 1 and 2 (two-sided)."
+    generate_alpha_error_table(12, caption_12, baseline_adjustion=True)
 
 
     ########################
@@ -259,7 +286,7 @@ if __name__ == "__main__":
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the method nparLD."
-    generate_power_table(methods_1, "period_1", 1, caption_prefix + caption_1)
+    generate_power_table(methods_1, "period_1", 1, caption_1)
 
     methods_8 = ["nparld"]
     caption_8 = \
@@ -267,8 +294,18 @@ if __name__ == "__main__":
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"nparLD for period 2 data."
-    generate_power_table(methods_8, "period_2", 8, caption_prefix + caption_8,
+    generate_power_table(methods_8, "period_2", 8, caption_8,
                          run_simulations=False)
+
+    methods_13 = ["nparld"]
+    caption_13 = \
+        r"\textit{Change from baseline approach:} Power simulation results " \
+        r"for the ordinal outcome ``pruritus'' and ``pain'' with varying " \
+        r"log-normal effects and normal effects (with $\sigma_{log}$ and " \
+        r"$\sigma_{norm} =1$) and scenarios 1 and 2 using nparLD for " \
+        r"period 1 data."
+    generate_power_table(methods_13, "period_1", 13, caption_13,
+                         baseline_adjustion=True)
 
 
     ########################
@@ -281,7 +318,7 @@ if __name__ == "__main__":
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the two-sided univariate matched and unmatched GPC method."
-    generate_power_table(methods_2, "combined", 2, caption_prefix + caption_2)
+    generate_power_table(methods_2, "combined", 2, caption_2)
 
     methods_3 = ["prioritized-matched-gpc", "prioritized-unmatched-gpc"]
     caption_3 = \
@@ -289,7 +326,7 @@ if __name__ == "__main__":
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the two-sided prioritized matched and unmatched GPC method."
-    generate_power_table(methods_3, "combined", 3, caption_prefix + caption_3)
+    generate_power_table(methods_3, "combined", 3, caption_3)
 
     methods_4 = ["non-prioritized-unmatched-gpc"]
     caption_4 = \
@@ -297,7 +334,7 @@ if __name__ == "__main__":
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the two-sided non-prioritized unmatched GPC method."
-    generate_power_table(methods_4, "combined", 4, caption_prefix + caption_4)
+    generate_power_table(methods_4, "combined", 4, caption_4)
 
     methods_9 = [
         "univariate-matched-gpc",
@@ -310,8 +347,7 @@ if __name__ == "__main__":
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the one-sided univariate/prioritized matched and unmatched GPC " \
         r"method."
-    generate_power_table(methods_9, "combined", 9, caption_prefix + caption_9,
-                         one_sided=True)
+    generate_power_table(methods_9, "combined", 9, caption_9, one_sided=True)
 
     methods_10 = ["non-prioritized-unmatched-gpc"]
     caption_10 = \
@@ -319,5 +355,38 @@ if __name__ == "__main__":
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the one-sided non-prioritized unmatched GPC method."
-    generate_power_table(methods_10, "combined", 10,
-                         caption_prefix + caption_10, one_sided=True)
+    generate_power_table(methods_10, "combined", 10, caption_10, one_sided=True)
+
+    methods_14 = ["non-prioritized-unmatched-gpc"]
+    caption_14 = \
+        r"\textit{Change from baseline approach:} Power simulation result " \
+        r"for the ordinal outcome ``pruritus'' and ``pain'' with varying " \
+        r"log-normal effects and normal effects (with $\sigma_{log}$ and " \
+        r"$\sigma_{norm} =1$) and scenarios 1 and 2 using the two-sided " \
+        r"non-prioritized unmatched GPC method."
+    generate_power_table(methods_14, "combined", 14, caption_10,
+                         baseline_adjustion=True)
+
+    methods_15 = [
+        "univariate-matched-gpc",
+        "univariate-unmatched-gpc"]
+    caption_15 = \
+        r"\textit{Change from baseline approach:} Power simulation result " \
+        r"for the ordinal outcome ``pruritus'' and ``pain'' with varying " \
+        r"log-normal effects and normal effects (with $\sigma_{log}$ and " \
+        r"$\sigma_{norm} =1$) and scenarios 1 and 2 using the two-sided " \
+        r"univariate matched and unmatched GPC method."
+    generate_power_table(methods_15, "combined", 15, caption_15,
+                         baseline_adjustion=True)
+
+    methods_16 = [
+        "prioritized-matched-gpc",
+        "prioritized-unmatched-gpc"]
+    caption_16 = \
+        r"\textit{Change from baseline approach:} Power simulation result " \
+        r"for the ordinal outcome ``pruritus'' and ``pain'' with varying " \
+        r"log-normal effects and normal effects (with $\sigma_{log}$ and " \
+        r"$\sigma_{norm} =1$) and scenarios 1 and 2 using the two-sided " \
+        r"prioritized matched and unmatched GPC method."
+    generate_power_table(methods_16, "combined", 16, caption_16,
+                         baseline_adjustion=True)
