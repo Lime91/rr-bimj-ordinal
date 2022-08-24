@@ -1,11 +1,12 @@
 # get ubuntu 20.04 (focal) with R=4.1.2 installed
 FROM rocker/r-ver:4.1.2
 
-# install system dependencies for R's data.table package and for python
+# install pdflatex(+packages), pip, and a system dependency for R's data.table package
 RUN apt-get update && \
     apt-get install -y \
-        zlib1g-dev \
-        python3-pip
+        texlive-latex-extra \
+        python3-pip \
+        zlib1g-dev
 
 # install R devtools in order to install specific package versions later
 RUN Rscript -e 'install.packages("devtools")'
@@ -18,9 +19,16 @@ RUN Rscript -e 'library(devtools); \
     install_version("nparLD", "2.1"); \
     install_version("jsonlite", "1.7.2");'
 
+# create non-root user but don't switch yet (non-daemon users usually start at 1000)
+ARG USERNAME=reproducer
+ARG UID=1000
+ARG GID=$UID
+RUN groupadd --gid $GID $USERNAME \
+    && useradd --uid $UID --gid $GID -m $USERNAME  
+
 # copy sources and change directory
-COPY ./* /home/$USERNAME/rr-bimj-working-directory
-WORKDIR /home/$USERNAME/rr-bimj-working-directory
+COPY --chown=$UID:$GID . /home/$USERNAME/rr-bimj
+WORKDIR /home/$USERNAME/rr-bimj
 
 # install the provided ./ebstatmax/simUtils R package (dependencies already installed above)
 RUN Rscript -e 'devtools::install("./ebstatmax/simUtils", dependencies=FALSE)'
@@ -28,15 +36,6 @@ RUN Rscript -e 'devtools::install("./ebstatmax/simUtils", dependencies=FALSE)'
 # install python packages (python 3.8.10 is pre-installed)
 RUN pip install -r requirements.txt
 
-# switch to non-root user (non-daemon users usually start at 1000)
-ARG USERNAME=rr-bimj-user
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
-
-# create non-root user
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME  
+# switch to non-root user and run reproducibility script on container start
 USER $USERNAME
-
-# run reproducibility script on container start
 CMD ["python3", "reproduce_all_tables.py"]
