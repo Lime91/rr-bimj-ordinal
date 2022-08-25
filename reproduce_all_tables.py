@@ -10,8 +10,8 @@ from typing import Iterable, List, Dict
 
 # simulation program
 R_PROGRAM = ["Rscript", "./ebstatmax/diacerein.R"]
-R_WINS_TABLE_SCRIPT = ["Rscript", "./script/wins_table.R"]
-R_PVALUE_TABLE_SCRIPT = ["Rscript", "./script/p_values_table.R"]
+R_WINS_TABLE_SCRIPT = ["Rscript", "./r-script/wins_table.R"]
+R_PVALUE_TABLE_SCRIPT = ["Rscript", "./r-script/p_values_table.R"]
 
 # output directory structure
 DIR_RAW_OUTPUT = "raw-output"
