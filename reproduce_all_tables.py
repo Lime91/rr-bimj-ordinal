@@ -1,3 +1,7 @@
+#!/usr/bin/python3
+
+# Reproduce all tables in the submitted manuscript
+# Copyright (C) 2022  Konstantin Emil Thiel
 
 from subprocess import Popen, PIPE, run
 from os import makedirs

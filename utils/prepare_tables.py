@@ -1,3 +1,7 @@
+# convert raw output from simulation program (../ebstatmax/diacerein.R) to
+# pandas DataFrames
+# Copyright (C) 2022  Konstantin Emil Thiel
+
 from json import load
 from pandas import MultiIndex, DataFrame
 from typing import Iterable

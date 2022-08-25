@@ -1,3 +1,6 @@
+# setup Docker image for reproducibility
+# Copyright (C) 2022  Konstantin Emil Thiel
+
 # get ubuntu 20.04 (focal) with R=4.1.2 installed
 FROM rocker/r-ver:4.1.2
 

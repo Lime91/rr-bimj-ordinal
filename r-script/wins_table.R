@@ -1,8 +1,8 @@
 #!/usr/bin/Rscript
 
 ################################################################################
-# this script is designed to reproduce a segment of the wins/losses/ties table
-# of the ordinal outcome paper
+# Reproduce a segment of the wins/losses/ties table
+# Copyright (C) 2022  Konstantin Emil Thiel
 ################################################################################
 
 # get target variable from command line

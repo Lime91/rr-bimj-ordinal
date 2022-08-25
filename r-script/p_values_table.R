@@ -1,11 +1,12 @@
 #!/usr/bin/Rscript
 
 ################################################################################
-# this script is designed to reproduce a segment of the p-value tables in the
-# ordinal outcome paper.
+# Reproduce a segment of the p-value tables
 # The script takes two command line arguments:
 #   1) method (either nparld or gpc)
 #   2) target variable (either Pain or Pruritus)
+
+# Copyright (C) 2022  Konstantin Emil Thiel
 ################################################################################
 
 

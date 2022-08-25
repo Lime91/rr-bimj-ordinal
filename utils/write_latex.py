@@ -1,3 +1,6 @@
+# functions to create and compile tex tables
+# Copyright (C) 2022  Konstantin Emil Thiel
+
 from pylatex import Document, MultiColumn, Tabular, Table, Center
 from pylatex.utils import NoEscape, bold
 from typing import Iterable
