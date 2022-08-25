@@ -50,7 +50,7 @@ POWER_TABLE_FILE_COLUMNS.append((PAIN_S2_NORM, PAIN_S2_LNORM))
 POWER_TABLE_FILE_ROW = (PRURITUS_ALPHA_ERROR, PAIN_ALPHA_ERROR)
 
 # simulation settings
-BASIC_SETTINGS = "-r "  # subtract and discard baseline
+BASIC_SETTINGS = ""
 POWER_SIMULATIONS = {
     BASIC_SETTINGS + "-t Pruritus -s 1 -e lnorm": PRURITUS_S1_LNORM,
     BASIC_SETTINGS + "-t Pruritus -s 2 -e lnorm": PRURITUS_S2_LNORM,
