@@ -231,7 +231,7 @@ if __name__ == "__main__":
 
 
     ############################
-    ####  Wins/Ties/Losses  ####
+    ####  Test Statistics   ####
     ############################
 
     caption_5 = \
@@ -324,42 +324,42 @@ if __name__ == "__main__":
         r"the two-sided univariate matched and unmatched GPC method."
     generate_power_table(methods_2, "combined", 2, caption_2)
 
-    methods_3 = ["prioritized-matched-gpc", "prioritized-unmatched-gpc"]
-    caption_3 = \
-        r"Power simulation result for the ordinal outcome ``pruritus'' and " \
-        r"``pain'' with varying log-normal effects and normal effects (with " \
-        r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
-        r"the two-sided prioritized matched and unmatched GPC method."
-    generate_power_table(methods_3, "combined", 3, caption_3)
-
-    methods_4 = ["non-prioritized-unmatched-gpc"]
+    methods_4 = ["prioritized-matched-gpc", "prioritized-unmatched-gpc"]
     caption_4 = \
         r"Power simulation result for the ordinal outcome ``pruritus'' and " \
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
-        r"the two-sided non-prioritized unmatched GPC method."
+        r"the two-sided prioritized matched and unmatched GPC method."
     generate_power_table(methods_4, "combined", 4, caption_4)
 
-    methods_9 = [
+    methods_3 = ["non-prioritized-unmatched-gpc"]
+    caption_3 = \
+        r"Power simulation result for the ordinal outcome ``pruritus'' and " \
+        r"``pain'' with varying log-normal effects and normal effects (with " \
+        r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
+        r"the two-sided non-prioritized unmatched GPC method."
+    generate_power_table(methods_3, "combined", 3, caption_3)
+
+    methods_10 = [
         "univariate-matched-gpc",
         "univariate-unmatched-gpc",
         "prioritized-matched-gpc",
         "prioritized-unmatched-gpc"]
-    caption_9 = \
+    caption_10 = \
         r"Power simulation results for the ordinal outcomes ``pruritus'' and " \
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the one-sided univariate/prioritized matched and unmatched GPC " \
         r"method."
-    generate_power_table(methods_9, "combined", 9, caption_9, one_sided=True)
+    generate_power_table(methods_10, "combined", 10, caption_10, one_sided=True)
 
-    methods_10 = ["non-prioritized-unmatched-gpc"]
-    caption_10 = \
+    methods_9 = ["non-prioritized-unmatched-gpc"]
+    caption_9 = \
         r"Power simulation results for the ordinal outcomes ``pruritus'' and " \
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the one-sided non-prioritized unmatched GPC method."
-    generate_power_table(methods_10, "combined", 10, caption_10, one_sided=True)
+    generate_power_table(methods_9, "combined", 9, caption_9, one_sided=True)
 
     methods_14 = ["non-prioritized-unmatched-gpc"]
     caption_14 = \
