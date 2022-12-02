@@ -5,7 +5,7 @@
 
 from subprocess import Popen, PIPE, run
 from os import makedirs
-from os.path import join, exists, dirname
+from os.path import join, exists, dirname, basename, splitext
 from pandas import read_csv
 from utils import prepare_power_table_segment, write_power_table
 from utils import prepare_alpha_error_table, write_alpha_error_table
@@ -70,6 +70,9 @@ ALPHA_ERROR_SIMULATIONS = {
     BASIC_SETTINGS + "-t Pain": PAIN_ALPHA_ERROR
 }
 
+# dataset for additional simulations
+DIACEREIN_80_MATCHED = "ebstatmax/data/Diacerein_80-matched.txt"
+
 
 def perform_simulations(
     method: str,
@@ -108,20 +111,23 @@ def generate_power_table(
     caption: str,
     run_simulations=True,
     one_sided=False,
-    baseline_adjustion=False) -> None:
+    baseline_adjustion=False,
+    extra_dataset=None) -> None:
 
     table_segments = []
     for method in methods:
         # run simulations
+        extra_args = ""
+        subdir = method
+        if extra_dataset:
+            extra_args += " -d {}".format(extra_dataset)
+            subdir += "__" + splitext(basename(extra_dataset))[0]
         if one_sided:
-            extra_args = "-u 1"
-            subdir = "one-sided-" + method
-        else:
-            extra_args = ""
-            subdir = method
+            extra_args += " -u 1"
+            subdir += "__one-sided"
         if baseline_adjustion:
-            extra_args = "-r " + extra_args
-            subdir = "baseline_adjusted__" + subdir
+            extra_args += " -r"
+            subdir += "__baseline_adjusted"
         raw_output_dir = join(DIR_RAW_OUTPUT, subdir)
         if run_simulations:
             perform_simulations(
@@ -137,7 +143,8 @@ def generate_power_table(
 def generate_alpha_error_table(
     number: int,
     caption: str,
-    baseline_adjustion=False) -> None:
+    baseline_adjustion=False,
+    extra_dataset=None) -> None:
 
     methods = [
         "nparld",
@@ -151,29 +158,26 @@ def generate_alpha_error_table(
     periods = []
     rownames = []
     for method in methods:
+        extra_args = ""
+        subdir = method
+        os_subdir = method
+        if extra_dataset:
+            extra_args += " -d {}".format(extra_dataset)
+            subdir += "__" + splitext(basename(extra_dataset))[0]
+            os_subdir += "__" + splitext(basename(extra_dataset))[0]
         if baseline_adjustion:
-            extra_args = "-r "
-        else:
-            extra_args = ""
+            extra_args += " -r "
+            subdir += "__baseline_adjusted"
+            os_subdir += "__one-sided__baseline_adjusted"
         if method == "nparld":
-            if baseline_adjustion:
-                subdir = "baseline_adjusted__" + method
-            else:
-                subdir = method
             output_dir = join(DIR_RAW_OUTPUT, subdir)
             outfiles = perform_simulations(
                 method, ALPHA_ERROR_SIMULATIONS, output_dir, extra_args)
             raw_file_rows.extend([outfiles] * 2)
-            basename = "nparLD two-sided Period "
-            rownames.extend([basename + "1", basename + "2"])
+            rname = "nparLD two-sided Period "
+            rownames.extend([rname + "1", rname + "2"])
             periods.extend(["period_1", "period_2"])
         else:
-            if baseline_adjustion:
-                subdir = "baseline_adjusted__" + method
-                os_subdir = "baseline_adjusted__one-sided-" + method
-            else:
-                subdir = method
-                os_subdir = "one-sided-" + method
             one_sided_output_dir = join(DIR_RAW_OUTPUT, os_subdir)
             two_sided_output_dir = join(DIR_RAW_OUTPUT, subdir)
             one_sided_outfiles = perform_simulations(
@@ -184,8 +188,8 @@ def generate_alpha_error_table(
                 extra_args)
             raw_file_rows.append(one_sided_outfiles)
             raw_file_rows.append(two_sided_outfiles)
-            basename = method.replace("-", " ").replace("gpc", "GPC")
-            rownames.extend([basename + " one-sided", basename + " two-sided"])
+            rname = method.replace("-", " ").replace("gpc", "GPC")
+            rownames.extend([rname + " one-sided", rname + " two-sided"])
             periods.extend(["combined"] * 2)
 
     df = prepare_alpha_error_table(raw_file_rows, periods, rownames)
@@ -228,7 +232,7 @@ if __name__ == "__main__":
               "cat(sessionInfo()$otherPkgs$simUtils$Packaged)"
     p = run(["Rscript", "-e", command], capture_output=True, text=True)
     print("\nsimUtils package installation time:", p.stdout, "\n")
-
+    """
 
     ############################
     ####  Test Statistics   ####
@@ -394,3 +398,18 @@ if __name__ == "__main__":
         r"prioritized matched and unmatched GPC method."
     generate_power_table(methods_16, "combined", 16, caption_16,
                          baseline_adjustion=True)
+
+    """
+    # required by reviewer
+    methods_999 = [
+        "univariate-unmatched-gpc",
+        "prioritized-unmatched-gpc",
+        "non-prioritized-unmatched-gpc"]
+    caption_999 = \
+        r"Power simulation results for the ordinal outcomes ``pruritus'' and " \
+        r"``pain'' with varying log-normal effects and normal effects (with " \
+        r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
+        r"the two-sided unmatched GPC variants when restricted to data from " \
+        r"subjects who participated in both treatment periods (N=80)."
+    generate_power_table(methods_999, "combined", 999, caption_999,
+                         extra_dataset=DIACEREIN_80_MATCHED)
