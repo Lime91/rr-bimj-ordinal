@@ -6,6 +6,7 @@
 from subprocess import Popen, PIPE, run
 from os import makedirs
 from os.path import join, exists, dirname, basename, splitext
+from shutil import rmtree
 from pandas import read_csv
 from utils import prepare_power_table_segment, write_power_table
 from utils import prepare_alpha_error_table, write_alpha_error_table
@@ -144,16 +145,18 @@ def generate_alpha_error_table(
     number: int,
     caption: str,
     baseline_adjustion=False,
-    extra_dataset=None) -> None:
+    extra_dataset=None,
+    methods=None) -> None:
 
-    methods = [
-        "nparld",
-        "univariate-matched-gpc",
-        "univariate-unmatched-gpc",
-        "prioritized-matched-gpc",
-        "prioritized-unmatched-gpc",
-        "non-prioritized-unmatched-gpc"
-    ]
+    if methods is None:
+        methods = [
+            "nparld",
+            "univariate-matched-gpc",
+            "univariate-unmatched-gpc",
+            "prioritized-matched-gpc",
+            "prioritized-unmatched-gpc",
+            "non-prioritized-unmatched-gpc"
+        ]
     raw_file_rows = []
     periods = []
     rownames = []
@@ -232,6 +235,9 @@ if __name__ == "__main__":
               "cat(sessionInfo()$otherPkgs$simUtils$Packaged)"
     p = run(["Rscript", "-e", command], capture_output=True, text=True)
     print("\nsimUtils package installation time:", p.stdout, "\n")
+
+    if exists(DIR_RESULT_TABLES):
+        rmtree(DIR_RESULT_TABLES)
     """
 
     ############################
@@ -400,6 +406,8 @@ if __name__ == "__main__":
                          baseline_adjustion=True)
 
     """
+
+    """
     # required by reviewer
     methods_999 = [
         "univariate-unmatched-gpc",
@@ -413,3 +421,16 @@ if __name__ == "__main__":
         r"subjects who participated in both treatment periods (N=80)."
     generate_power_table(methods_999, "combined", 999, caption_999,
                          extra_dataset=DIACEREIN_80_MATCHED)
+    """
+
+    methods_998 = [
+        "univariate-unmatched-gpc",
+        "prioritized-unmatched-gpc",
+        "non-prioritized-unmatched-gpc"]
+    caption_998 = \
+        r"Type I error simulation result for the ordinal outcome ``pruritus''" \
+        r" and ``pain'' based on 5000 permutation runs using using " \
+        r"the two-sided unmatched GPC variants when restricted to data from " \
+        r"subjects who participated in both treatment periods (N=80)."
+    generate_alpha_error_table(998, caption_998, methods=methods_998,
+                               extra_dataset=DIACEREIN_80_MATCHED)
