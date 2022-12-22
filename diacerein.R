@@ -11,7 +11,7 @@ suppressPackageStartupMessages(require(optparse))
 suppressPackageStartupMessages(require(devtools))
 suppressPackageStartupMessages(require(jsonlite))
 
-# load self-written utilities
+# load utilities
 if (!suppressPackageStartupMessages(
     suppressWarnings(require(simUtils))))
   suppressMessages(devtools::load_all("simUtils"))
@@ -39,7 +39,10 @@ option_list <- list(
               help=paste0("The required simulation scenario. ",
                           "#1: add effects at post-treatment only. ",
                           "#2: effects at post-treatment and, less markedly, ",
-                          "at follow-up. [default %default]")),
+                          "at follow-up. ",
+                          "#3 effects at post-treatment, (less markedly) at ",
+                          "treatment, and (less markedly) at follow-up. ",
+                          "[default %default]")),
   make_option(c("-t", "--target"),
               action="store",
               default="Blister_count",
