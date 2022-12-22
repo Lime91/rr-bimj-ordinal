@@ -72,7 +72,7 @@ ALPHA_ERROR_SIMULATIONS = {
 }
 
 # dataset for additional simulations
-DIACEREIN_80_MATCHED = "ebstatmax/data/Diacerein_80-matched.txt"
+DIACEREIN_80_MATCHED = "./Diacerein_80-matched.txt"
 
 
 def perform_simulations(
@@ -146,7 +146,8 @@ def generate_alpha_error_table(
     caption: str,
     baseline_adjustion=False,
     extra_dataset=None,
-    methods=None) -> None:
+    methods=None,
+    add_one_sided_gpc=True) -> None:
 
     if methods is None:
         methods = [
@@ -181,19 +182,23 @@ def generate_alpha_error_table(
             rownames.extend([rname + "1", rname + "2"])
             periods.extend(["period_1", "period_2"])
         else:
-            one_sided_output_dir = join(DIR_RAW_OUTPUT, os_subdir)
+            rname = method.replace("-", " ").replace("gpc", "GPC")
+            if add_one_sided_gpc:
+                one_sided_output_dir = join(DIR_RAW_OUTPUT, os_subdir)
+                one_sided_outfiles = perform_simulations(
+                    method,
+                    ALPHA_ERROR_SIMULATIONS, one_sided_output_dir,
+                    extra_args + " -u 1")
+                raw_file_rows.append(one_sided_outfiles)
+                rownames.append(rname + " one-sided")
+                periods.append("combined")
             two_sided_output_dir = join(DIR_RAW_OUTPUT, subdir)
-            one_sided_outfiles = perform_simulations(
-                method, ALPHA_ERROR_SIMULATIONS, one_sided_output_dir,
-                extra_args + " -u 1")
             two_sided_outfiles = perform_simulations(
                 method, ALPHA_ERROR_SIMULATIONS, two_sided_output_dir,
                 extra_args)
-            raw_file_rows.append(one_sided_outfiles)
             raw_file_rows.append(two_sided_outfiles)
-            rname = method.replace("-", " ").replace("gpc", "GPC")
-            rownames.extend([rname + " one-sided", rname + " two-sided"])
-            periods.extend(["combined"] * 2)
+            rownames.append(rname + " two-sided")
+            periods.append("combined")
 
     df = prepare_alpha_error_table(raw_file_rows, periods, rownames)
     write_alpha_error_table(df, DIR_RESULT_TABLES, number, caption)
@@ -238,7 +243,9 @@ if __name__ == "__main__":
 
     if exists(DIR_RESULT_TABLES):
         rmtree(DIR_RESULT_TABLES)
-    """
+    if exists(DIR_RAW_OUTPUT):
+        rmtree(DIR_RAW_OUTPUT)
+
 
     ############################
     ####  Test Statistics   ####
@@ -261,33 +268,46 @@ if __name__ == "__main__":
     ####  Wins/Ties/Losses  ####
     ############################
 
-    caption_11 = \
+    caption_13 = \
         r"Net benefit (95\% CI) and $p$-value (one-sided) for the GPC " \
         r"variants applied to the original dataset for the ordinal outcome " \
         r"``pruritus'' and ``pain'', with the following prioritization (in " \
         r"descending order): time point W4=post treatment, FU=follow up, " \
         r"W2=2 weeks, W0=baseline."
-    generate_wins_table(11, caption_11)
+    generate_wins_table(13, caption_13)
 
 
     ########################
     ####  Type I Error  ####
     ########################
 
-    caption_7 = \
+    methods_8 = [
+        "univariate-unmatched-gpc",
+        "prioritized-unmatched-gpc",
+        "non-prioritized-unmatched-gpc"]
+    caption_8 = \
+        r"Type I error simulation result for the ordinal outcome ``pruritus''" \
+        r" and ``pain'' based on 5000 permutation runs using using " \
+        r"the two-sided unmatched GPC variants when restricted to data from " \
+        r"subjects who participated in both treatment periods (N=80)."
+    generate_alpha_error_table(8, caption_8, methods=methods_8,
+                               extra_dataset=DIACEREIN_80_MATCHED,
+                               add_one_sided_gpc=False)
+
+    caption_9 = \
         r"Type I error simulation result for the ordinal outcome ``pruritus''" \
         r" and ``pain'' based on 5000 permutation runs using matched and " \
         r"unmatched univariate/prioritized/non-prioritized GPC (one-sided " \
         r"and two-sided) and nparLD split into time period 1 and 2 (two-sided)."
-    generate_alpha_error_table(7, caption_7)
+    generate_alpha_error_table(9, caption_9)
 
-    caption_12 = \
+    caption_14 = \
         r"\textit{Change from baseline approach:} Type I error simulation " \
         r"result for the ordinal outcome ``pruritus'' and ``pain'' based " \
         r"on 5000 permutation runs using matched and unmatched " \
         r"univariate/prioritized/non-prioritized GPC (one-sided and " \
         r"two-sided) and nparLD split into time period 1 and 2 (two-sided)."
-    generate_alpha_error_table(12, caption_12, baseline_adjustion=True)
+    generate_alpha_error_table(14, caption_14, baseline_adjustion=True)
 
 
     ########################
@@ -302,23 +322,23 @@ if __name__ == "__main__":
         r"the method nparLD."
     generate_power_table(methods_1, "period_1", 1, caption_1)
 
-    methods_8 = ["nparld"]
-    caption_8 = \
+    methods_10 = ["nparld"]
+    caption_10 = \
         r"Power simulation results for the ordinal outcome ``pruritus'' and " \
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"nparLD for period 2 data."
-    generate_power_table(methods_8, "period_2", 8, caption_8,
+    generate_power_table(methods_10, "period_2", 10, caption_10,
                          run_simulations=False)
 
-    methods_13 = ["nparld"]
-    caption_13 = \
+    methods_15 = ["nparld"]
+    caption_15 = \
         r"\textit{Change from baseline approach:} Power simulation results " \
         r"for the ordinal outcome ``pruritus'' and ``pain'' with varying " \
         r"log-normal effects and normal effects (with $\sigma_{log}$ and " \
         r"$\sigma_{norm} =1$) and scenarios 1 and 2 using nparLD for " \
         r"period 1 data."
-    generate_power_table(methods_13, "period_1", 13, caption_13,
+    generate_power_table(methods_15, "period_1", 15, caption_15,
                          baseline_adjustion=True)
 
 
@@ -334,14 +354,6 @@ if __name__ == "__main__":
         r"the two-sided univariate matched and unmatched GPC method."
     generate_power_table(methods_2, "combined", 2, caption_2)
 
-    methods_4 = ["prioritized-matched-gpc", "prioritized-unmatched-gpc"]
-    caption_4 = \
-        r"Power simulation result for the ordinal outcome ``pruritus'' and " \
-        r"``pain'' with varying log-normal effects and normal effects (with " \
-        r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
-        r"the two-sided prioritized matched and unmatched GPC method."
-    generate_power_table(methods_4, "combined", 4, caption_4)
-
     methods_3 = ["non-prioritized-unmatched-gpc"]
     caption_3 = \
         r"Power simulation result for the ordinal outcome ``pruritus'' and " \
@@ -350,87 +362,78 @@ if __name__ == "__main__":
         r"the two-sided non-prioritized unmatched GPC method."
     generate_power_table(methods_3, "combined", 3, caption_3)
 
-    methods_10 = [
+    methods_4 = ["prioritized-matched-gpc", "prioritized-unmatched-gpc"]
+    caption_4 = \
+        r"Power simulation result for the ordinal outcome ``pruritus'' and " \
+        r"``pain'' with varying log-normal effects and normal effects (with " \
+        r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
+        r"the two-sided prioritized matched and unmatched GPC method."
+    generate_power_table(methods_4, "combined", 4, caption_4)
+
+    methods_7 = [
+        "univariate-unmatched-gpc",
+        "prioritized-unmatched-gpc",
+        "non-prioritized-unmatched-gpc"]
+    caption_7 = \
+        r"Power simulation results for the ordinal outcomes ``pruritus'' and " \
+        r"``pain'' with varying log-normal effects and normal effects (with " \
+        r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
+        r"the two-sided unmatched GPC variants when restricted to data from " \
+        r"subjects who participated in both treatment periods (N=80)."
+    generate_power_table(methods_7, "combined", 7, caption_7,
+                         extra_dataset=DIACEREIN_80_MATCHED)
+
+    methods_11 = ["non-prioritized-unmatched-gpc"]
+    caption_11 = \
+        r"Power simulation results for the ordinal outcomes ``pruritus'' and " \
+        r"``pain'' with varying log-normal effects and normal effects (with " \
+        r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
+        r"the one-sided non-prioritized unmatched GPC method."
+    generate_power_table(methods_11, "combined", 11, caption_11, one_sided=True)
+
+    methods_12 = [
         "univariate-matched-gpc",
         "univariate-unmatched-gpc",
         "prioritized-matched-gpc",
         "prioritized-unmatched-gpc"]
-    caption_10 = \
+    caption_12 = \
         r"Power simulation results for the ordinal outcomes ``pruritus'' and " \
         r"``pain'' with varying log-normal effects and normal effects (with " \
         r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
         r"the one-sided univariate/prioritized matched and unmatched GPC " \
         r"method."
-    generate_power_table(methods_10, "combined", 10, caption_10, one_sided=True)
+    generate_power_table(methods_12, "combined", 12, caption_12, one_sided=True)
 
-    methods_9 = ["non-prioritized-unmatched-gpc"]
-    caption_9 = \
-        r"Power simulation results for the ordinal outcomes ``pruritus'' and " \
-        r"``pain'' with varying log-normal effects and normal effects (with " \
-        r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
-        r"the one-sided non-prioritized unmatched GPC method."
-    generate_power_table(methods_9, "combined", 9, caption_9, one_sided=True)
-
-    methods_14 = ["non-prioritized-unmatched-gpc"]
-    caption_14 = \
-        r"\textit{Change from baseline approach:} Power simulation result " \
-        r"for the ordinal outcome ``pruritus'' and ``pain'' with varying " \
-        r"log-normal effects and normal effects (with $\sigma_{log}$ and " \
-        r"$\sigma_{norm} =1$) and scenarios 1 and 2 using the two-sided " \
-        r"non-prioritized unmatched GPC method."
-    generate_power_table(methods_14, "combined", 14, caption_10,
-                         baseline_adjustion=True)
-
-    methods_15 = [
-        "univariate-matched-gpc",
-        "univariate-unmatched-gpc"]
-    caption_15 = \
-        r"\textit{Change from baseline approach:} Power simulation result " \
-        r"for the ordinal outcome ``pruritus'' and ``pain'' with varying " \
-        r"log-normal effects and normal effects (with $\sigma_{log}$ and " \
-        r"$\sigma_{norm} =1$) and scenarios 1 and 2 using the two-sided " \
-        r"univariate matched and unmatched GPC method."
-    generate_power_table(methods_15, "combined", 15, caption_15,
-                         baseline_adjustion=True)
-
-    methods_16 = [
-        "prioritized-matched-gpc",
-        "prioritized-unmatched-gpc"]
+    methods_16 = ["non-prioritized-unmatched-gpc"]
     caption_16 = \
         r"\textit{Change from baseline approach:} Power simulation result " \
         r"for the ordinal outcome ``pruritus'' and ``pain'' with varying " \
         r"log-normal effects and normal effects (with $\sigma_{log}$ and " \
         r"$\sigma_{norm} =1$) and scenarios 1 and 2 using the two-sided " \
-        r"prioritized matched and unmatched GPC method."
+        r"non-prioritized unmatched GPC method."
     generate_power_table(methods_16, "combined", 16, caption_16,
                          baseline_adjustion=True)
 
-    """
+    methods_17 = [
+        "univariate-matched-gpc",
+        "univariate-unmatched-gpc"]
+    caption_17 = \
+        r"\textit{Change from baseline approach:} Power simulation result " \
+        r"for the ordinal outcome ``pruritus'' and ``pain'' with varying " \
+        r"log-normal effects and normal effects (with $\sigma_{log}$ and " \
+        r"$\sigma_{norm} =1$) and scenarios 1 and 2 using the two-sided " \
+        r"univariate matched and unmatched GPC method."
+    generate_power_table(methods_17, "combined", 17, caption_17,
+                         baseline_adjustion=True)
 
-    """
-    # required by reviewer
-    methods_999 = [
-        "univariate-unmatched-gpc",
-        "prioritized-unmatched-gpc",
-        "non-prioritized-unmatched-gpc"]
-    caption_999 = \
-        r"Power simulation results for the ordinal outcomes ``pruritus'' and " \
-        r"``pain'' with varying log-normal effects and normal effects (with " \
-        r"$\sigma_{log}$ and $\sigma_{norm} =1$) and scenarios 1 and 2 using " \
-        r"the two-sided unmatched GPC variants when restricted to data from " \
-        r"subjects who participated in both treatment periods (N=80)."
-    generate_power_table(methods_999, "combined", 999, caption_999,
-                         extra_dataset=DIACEREIN_80_MATCHED)
-    """
-
-    methods_998 = [
-        "univariate-unmatched-gpc",
-        "prioritized-unmatched-gpc",
-        "non-prioritized-unmatched-gpc"]
-    caption_998 = \
-        r"Type I error simulation result for the ordinal outcome ``pruritus''" \
-        r" and ``pain'' based on 5000 permutation runs using using " \
-        r"the two-sided unmatched GPC variants when restricted to data from " \
-        r"subjects who participated in both treatment periods (N=80)."
-    generate_alpha_error_table(998, caption_998, methods=methods_998,
-                               extra_dataset=DIACEREIN_80_MATCHED)
+    methods_18 = [
+        "prioritized-matched-gpc",
+        "prioritized-unmatched-gpc"]
+    caption_18 = \
+        r"\textit{Change from baseline approach:} Power simulation result " \
+        r"for the ordinal outcome ``pruritus'' and ``pain'' with varying " \
+        r"log-normal effects and normal effects (with $\sigma_{log}$ and " \
+        r"$\sigma_{norm} =1$) and scenarios 1 and 2 using the two-sided " \
+        r"prioritized matched and unmatched GPC method."
+    generate_power_table(methods_18, "combined", 18, caption_18,
+                         baseline_adjustion=True)

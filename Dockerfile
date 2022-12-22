@@ -2,7 +2,7 @@
 # Copyright (C) 2022  Konstantin Emil Thiel
 
 # get ubuntu 20.04 (focal) with R=4.1.2 installed
-FROM rocker/r-ver:4.1.2
+FROM rocker/r-ver:4.2.1
 
 # install pdflatex(+packages), pip, and a system dependency for R's data.table package
 RUN apt-get update && \
@@ -12,15 +12,17 @@ RUN apt-get update && \
         zlib1g-dev
 
 # install R devtools in order to install specific package versions later
-RUN Rscript -e 'install.packages("devtools")'
+RUN Rscript -e 'options(warn = 2); \
+    install.packages("devtools")'
 
 # install R packages
-RUN Rscript -e 'library(devtools); \
-    install_version("optparse", "1.7.1"); \
-    install_version("data.table", "1.12.8"); \
-    install_version("dplyr", "1.0.7"); \
-    install_version("nparLD", "2.1"); \
-    install_version("jsonlite", "1.7.2");'
+RUN Rscript -e 'options(warn = 2); \
+    library(devtools); \
+    install_version("optparse", "1.7.3"); \
+    install_version("data.table", "1.14.6"); \
+    install_version("dplyr", "1.0.10"); \
+    install_version("nparLD", "2.2"); \
+    install_version("jsonlite", "1.8.3");'
 
 # create non-root user but don't switch yet (non-daemon users usually start at 1000)
 ARG USERNAME=reproducer
