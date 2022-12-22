@@ -19,7 +19,7 @@ RUN Rscript -e 'options(warn = 2); \
 RUN Rscript -e 'options(warn = 2); \
     library(devtools); \
     install_version("optparse", "1.7.3"); \
-    install_version("data.table", "1.14.6"); \
+    install_version("data.table", "1.14"); \
     install_version("dplyr", "1.0.10"); \
     install_version("nparLD", "2.2"); \
     install_version("jsonlite", "1.8.3");'
@@ -43,4 +43,4 @@ RUN pip install -r requirements.txt
 
 # switch to non-root user and run reproducibility script on container start
 USER $USERNAME
-CMD ["python3", "reproduce_all_tables.py"]
+CMD ["python3", "reproduce.py"]

@@ -1,15 +1,16 @@
 # rr-bimj-ordinal
-Reproducible Research Supplement for a Publication in Biometrical Journal
+Reproducible Research Supplement for the submission by Geroldinger et al. in Biometrical Journal: *A neutral comparison of statistical methods for analyzing longitudinally measured ordinal outcomes in rare diseases*.
+
 
 ## Content
 
-Main element is the `reproduce_all_tables.py` script, which generates all tables from the submitted paper.
-Some of the script's functionalities are outsourced to the `utils` module.
-`reproduce_all_tables.py` calls the `ebstatmax` simulation framework repeatedly to compute type-I errors and power of the investigated statistical testing procedures.
-`ebstatmax` is provided as a `git subtree`.
-See `ebstatmax/README.md` for further documentation of the simulation framework itself.
-`r-script/` provides additional scripts that compute data for p-value tables.
-These scripts are also executed by `reproduce_all_tables.py`.
+This project's main item is `reproduce.py`, which generates all simulation results from the submitted paper, mainly by invoking `ebstatmax/diacerein.R` repeatedly to compute type-I errors and power of the investigated statistical testing procedures (GPC variants as well as nparLD).
+Moreover, `reproduce.py` executes the scripts in `r-script/` to generate additional tables and figures.
+The `utils/` python module provides functions for these tasks.
+
+`ebstatmax/` is a git subtree that provides a standalone simulation framework, including the original study data used in our simulations.
+Documentation is available in `ebstatmax/README.md`.
+`Diacerein_80-matched.txt` contains a subset of the original study data and is used as an extra input for some simulations.
 
 Note that all tables are generated as `tex` files and additionally compiled to `pdf`.
 This is done with the `pythontex` package.
@@ -18,15 +19,15 @@ This is done with the `pythontex` package.
 
 ### Run as a Docker Container
 
-The easiest way to reproduce all tables is to use Docker.
+The easiest way to reproduce all results is to use Docker.
 A `Dockerfile` is provided for that purpose.
 Execute the following commands:
   - `sudo docker build . -t rr-bimj:latest`. This builds a new image.
-  - `sudo docker run -it --name rr-bimj rr-bimj:latest`. This sets up a new container from the image and executes `reproduce_all_tables.py` in this container.
+  - `sudo docker run -it --name rr-bimj rr-bimj:latest`. This sets up a new container from the image and executes `reproduce.py` in this container.
 
-When `reproduce_all_tables.py` is finished (presumably after several hours of computation), the container stops and tables can be obtained from it.
+When `reproduce.py` is finished (presumably after several hours of computation), the container stops and results can be obtained from it.
 Use the following commands:
-  - `sudo docker cp rr-bimj:/home/reproducer/rr-bimj/tables ./tables` to copy all tables into a local directory `./tables`.
+  - `sudo docker cp rr-bimj:/home/reproducer/rr-bimj/results ./results` to copy all tables into a local directory `./results`.
   - `sudo docker cp rr-bimj:/home/reproducer/rr-bimj/raw-output ./raw-output` to copy intermediate simulation results into a local directory `./raw-output`.
 
 See the provided `Dockerfile` for details.
@@ -34,19 +35,19 @@ See the provided `Dockerfile` for details.
 
 ### Run Locally
 
-In order to run `reproduce_all_tables.py` without Docker, the folowing requrements must be met:
+In order to run `reproduce.py` without Docker, the folowing requrements must be met:
 
-rr-bimj-ordinal was mainly developed using the `ubuntu20.04` operating system and `python3.8.10`.
+This project was mainly developed on `ubuntu20.04` operating system using `python3.8.10`.
 All python packages listed in `requirements.txt` are needed.
-Moreover, `R>=3.6.3` and all packages listed in `ebstatmax/README.md` are required. 
+Moreover, `R==4.2.1` and all packages listed in `ebstatmax/README.md` are required. 
 Another requirement is the `pdflatex` compiler and several latex packages used by `pythontex`, which can be installed on ubuntu with `apt-get install texlive-latex-extra`.
 
 Once these requirements are met, execute the following commands:
   - `sudo Rscript -e "devtools::install('ebstatmax/simUtils', dependencies=F)"`. This installs the `simUtils` package required by the `ebstatmax` simulation framework.
-  - `python3 reproduce_all_tables.py`.
+  - `python3 reproduce.py`.
 
 Wait for the python interpreter to terminate again (this is likely to take several hours).
-Once the computation is finished, tables can be found in a newly created `tables/` directory and intermediate simulation results are in `raw-output/`.
+Once the computation is finished, results can be found in a newly created `results/` directory and intermediate simulation results are in `raw-output/`.
 
 ## Copyright
 

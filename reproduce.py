@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-# Reproduce all tables in the submitted manuscript
+# Reproduce tables and figures in the submitted manuscript
 # Copyright (C) 2022  Konstantin Emil Thiel
 
 from subprocess import Popen, PIPE, run
@@ -17,10 +17,11 @@ from typing import Iterable, List, Dict
 R_PROGRAM = ["Rscript", "./ebstatmax/diacerein.R"]
 R_WINS_TABLE_SCRIPT = ["Rscript", "./r-script/wins_table.R"]
 R_PVALUE_TABLE_SCRIPT = ["Rscript", "./r-script/p_values_table.R"]
+R_BOXPLOT_SCRIPT = ["Rscript", "./r-script/boxplot.R"]
 
 # output directory structure
 DIR_RAW_OUTPUT = "raw-output"
-DIR_RESULT_TABLES = "tables"
+DIR_RESULTS = "results"
 SUBDIR_PAIN = "pain"
 SUBDIR_PRURITUS = "pruritus"
 SUBDIR_SCENARIO_1 = "scenario_1"
@@ -138,7 +139,7 @@ def generate_power_table(
             raw_output_dir, POWER_TABLE_FILE_COLUMNS, period)
         table_segments.append(df)
     # write table to disc
-    write_power_table(table_segments, DIR_RESULT_TABLES, number, caption)
+    write_power_table(table_segments, DIR_RESULTS, number, caption)
 
 
 def generate_alpha_error_table(
@@ -201,7 +202,7 @@ def generate_alpha_error_table(
             periods.append("combined")
 
     df = prepare_alpha_error_table(raw_file_rows, periods, rownames)
-    write_alpha_error_table(df, DIR_RESULT_TABLES, number, caption)
+    write_alpha_error_table(df, DIR_RESULTS, number, caption)
 
 
 def generate_wins_table(
@@ -215,7 +216,7 @@ def generate_wins_table(
     pain_cmd = R_WINS_TABLE_SCRIPT + ["Pain"]
     pain_proc = Popen(pain_cmd, stderr=PIPE, stdout=PIPE, text=True)
     pain_df = read_csv(pain_proc.stdout, header=0, index_col=0, dtype=str)
-    write_wins_table(pruritus_df, pain_df, DIR_RESULT_TABLES, number, caption)
+    write_wins_table(pruritus_df, pain_df, DIR_RESULTS, number, caption)
 
 
 def generate_pvalue_table(
@@ -230,8 +231,12 @@ def generate_pvalue_table(
     pain_cmd = R_PVALUE_TABLE_SCRIPT + [method, "Pain"]
     pain_proc = Popen(pain_cmd, stderr=PIPE, stdout=PIPE, text=True)
     pain_df = read_csv(pain_proc.stdout, header=0, index_col=0, dtype=str)
-    write_pvalue_table(pruritus_df, pain_df, DIR_RESULT_TABLES, number, caption)
+    write_pvalue_table(pruritus_df, pain_df, DIR_RESULTS, number, caption)
 
+
+def draw_boxplot() -> None:
+    Popen(R_BOXPLOT_SCRIPT, stderr=PIPE, stdout=PIPE, text=True)
+    
 
 if __name__ == "__main__":
 
@@ -241,10 +246,17 @@ if __name__ == "__main__":
     p = run(["Rscript", "-e", command], capture_output=True, text=True)
     print("\nsimUtils package installation time:", p.stdout, "\n")
 
-    if exists(DIR_RESULT_TABLES):
-        rmtree(DIR_RESULT_TABLES)
+    if exists(DIR_RESULTS):
+        rmtree(DIR_RESULTS)
     if exists(DIR_RAW_OUTPUT):
         rmtree(DIR_RAW_OUTPUT)
+
+
+    ############################
+    ####   Fig. 3 Boxplot   ####
+    ############################
+
+    draw_boxplot()
 
 
     ############################
