@@ -1,5 +1,5 @@
 # rr-bimj-ordinal
-Reproducible Research Supplement for the submission by Geroldinger et al. in Biometrical Journal: *A neutral comparison of statistical methods for analyzing longitudinally measured ordinal outcomes in rare diseases*.
+Reproducible research supplement for the submission by Geroldinger et al. in Biometrical Journal: *A neutral comparison of statistical methods for analyzing longitudinally measured ordinal outcomes in rare diseases*.
 
 
 ## Content
