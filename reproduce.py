@@ -4,7 +4,7 @@
 # Copyright (C) 2022  Konstantin Emil Thiel
 
 from subprocess import Popen, PIPE, run
-from os import makedirs
+from os import makedirs, mkdir
 from os.path import join, exists, dirname, basename, splitext
 from shutil import rmtree
 from pandas import read_csv
@@ -169,11 +169,11 @@ def generate_alpha_error_table(
         if extra_dataset:
             extra_args += " -d {}".format(extra_dataset)
             subdir += "__" + splitext(basename(extra_dataset))[0]
-            os_subdir += "__" + splitext(basename(extra_dataset))[0]
+            os_subdir += "__one-sided__" + splitext(basename(extra_dataset))[0]
         if baseline_adjustion:
             extra_args += " -r "
             subdir += "__baseline_adjusted"
-            os_subdir += "__one-sided__baseline_adjusted"
+            os_subdir += "__baseline_adjusted"
         if method == "nparld":
             output_dir = join(DIR_RAW_OUTPUT, subdir)
             outfiles = perform_simulations(
@@ -250,14 +250,16 @@ if __name__ == "__main__":
         rmtree(DIR_RESULTS)
     if exists(DIR_RAW_OUTPUT):
         rmtree(DIR_RAW_OUTPUT)
-
+    
+    mkdir(DIR_RESULTS)
+    mkdir(DIR_RAW_OUTPUT)
 
     ############################
     ####   Fig. 3 Boxplot   ####
     ############################
 
     draw_boxplot()
-
+    
 
     ############################
     ####  Test Statistics   ####
