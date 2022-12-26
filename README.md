@@ -10,10 +10,15 @@ The `utils/` python module provides functions for these tasks.
 
 `ebstatmax/` is a git subtree that provides a standalone simulation framework, including the original study data used in our simulations.
 Documentation is available in `ebstatmax/README.md`.
+
 `Diacerein_80-matched.txt` contains a subset of the original study data and is used as an extra input for some simulations.
 
 Note that all tables are generated as `tex` files and additionally compiled to `pdf`.
 This is done with the `pythontex` package.
+
+Reproducing all results using this supplement takes several hours of time.
+All code is executed sequentially (not in parallel).
+On a machine with an *AMD Ryzen 7 PRO 4750U* CPU, the runtime of `reproduce.py` is approximately 20 hours.
 
 ## Requirements
 
@@ -28,7 +33,7 @@ Execute the following commands:
 When `reproduce.py` is finished (presumably after several hours of computation), the container stops and results can be obtained from it.
 Use the following commands:
   - `sudo docker cp rr-bimj:/home/reproducer/rr-bimj/results ./results` to copy all tables into a local directory `./results`.
-  - `sudo docker cp rr-bimj:/home/reproducer/rr-bimj/raw-output ./raw-output` to copy intermediate simulation results into a local directory `./raw-output`.
+  - `sudo docker cp rr-bimj:/home/reproducer/rr-bimj/raw-output ./raw-output` to copy intermediate simulation outputs into a local directory `./raw-output`.
 
 See the provided `Dockerfile` for details.
 
@@ -46,8 +51,8 @@ Once these requirements are met, execute the following commands:
   - `sudo Rscript -e "devtools::install('ebstatmax/simUtils', dependencies=F)"`. This installs the `simUtils` package required by the `ebstatmax` simulation framework.
   - `python3 reproduce.py`.
 
-Wait for the python interpreter to terminate again (this is likely to take several hours).
-Once the computation is finished, results can be found in a newly created `results/` directory and intermediate simulation results are in `raw-output/`.
+Wait for the python interpreter to terminate again (which is expected after several hours of runtime).
+Results can be found in a newly created `results/` directory and intermediate simulation outputs are in `raw-output/`.
 
 ## Copyright
 

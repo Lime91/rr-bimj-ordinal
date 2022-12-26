@@ -100,9 +100,9 @@ def perform_simulations(
                     stdout=out,
                     bufsize=1,  # line-buffered
                     text=True) as p:
-                print("\n\nrunning simulations for", outfile, "...\n")
+                print("\n\n  running simulations for", outfile, "...\n")
                 for line in p.stderr:
-                    print("### ", line, end='')
+                    print("  ## ", line, end='')
     return outfiles
 
 
@@ -165,15 +165,17 @@ def generate_alpha_error_table(
     for method in methods:
         extra_args = ""
         subdir = method
-        os_subdir = method
+        os_subdir = method + "__one-sided"
+        suffix = ""
         if extra_dataset:
             extra_args += " -d {}".format(extra_dataset)
-            subdir += "__" + splitext(basename(extra_dataset))[0]
-            os_subdir += "__one-sided__" + splitext(basename(extra_dataset))[0]
+            suffix += "__" + splitext(basename(extra_dataset))[0]
         if baseline_adjustion:
             extra_args += " -r "
-            subdir += "__baseline_adjusted"
-            os_subdir += "__baseline_adjusted"
+            suffix += "__baseline_adjusted"
+        subdir += suffix
+        os_subdir += suffix
+        
         if method == "nparld":
             output_dir = join(DIR_RAW_OUTPUT, subdir)
             outfiles = perform_simulations(
@@ -235,16 +237,12 @@ def generate_pvalue_table(
 
 
 def draw_boxplot() -> None:
-    Popen(R_BOXPLOT_SCRIPT, stderr=PIPE, stdout=PIPE, text=True)
+    p = run(R_BOXPLOT_SCRIPT, capture_output=True, text=True)
+    if p.returncode != 0:
+        print("could not create Boxplot. The R-stderr reads:", p.stderr)
     
 
 if __name__ == "__main__":
-
-    # print simUtils version
-    command = "suppressPackageStartupMessages(require(simUtils)); " \
-              "cat(sessionInfo()$otherPkgs$simUtils$Packaged)"
-    p = run(["Rscript", "-e", command], capture_output=True, text=True)
-    print("\nsimUtils package installation time:", p.stdout, "\n")
 
     if exists(DIR_RESULTS):
         rmtree(DIR_RESULTS)
@@ -258,12 +256,16 @@ if __name__ == "__main__":
     ####   Fig. 3 Boxplot   ####
     ############################
 
+    print("Creating boxplot (Figure 3).")
+
     draw_boxplot()
     
 
     ############################
     ####  Test Statistics   ####
     ############################
+
+    print("Creating test statistics tables (Table 5, 6).")
 
     caption_5 = \
         r"Resulting interaction effect of time and group for the ordinal " \
@@ -282,6 +284,8 @@ if __name__ == "__main__":
     ####  Wins/Ties/Losses  ####
     ############################
 
+    print("Creating GPC wins/ties/losses table (Table 13).")
+
     caption_13 = \
         r"Net benefit (95\% CI) and $p$-value (one-sided) for the GPC " \
         r"variants applied to the original dataset for the ordinal outcome " \
@@ -295,6 +299,8 @@ if __name__ == "__main__":
     ####  Type I Error  ####
     ########################
 
+    print("Creating type I error tables (Table 8, 9, 14).")
+
     methods_8 = [
         "univariate-unmatched-gpc",
         "prioritized-unmatched-gpc",
@@ -307,7 +313,7 @@ if __name__ == "__main__":
     generate_alpha_error_table(8, caption_8, methods=methods_8,
                                extra_dataset=DIACEREIN_80_MATCHED,
                                add_one_sided_gpc=False)
-
+    
     caption_9 = \
         r"Type I error simulation result for the ordinal outcome ``pruritus''" \
         r" and ``pain'' based on 5000 permutation runs using matched and " \
@@ -327,6 +333,8 @@ if __name__ == "__main__":
     ########################
     ####  nparLD Power  ####
     ########################
+
+    print("Creating nparLD power tables (Table 1, 10, 15).")
 
     methods_1 = ["nparld"]
     caption_1 = \
@@ -359,6 +367,8 @@ if __name__ == "__main__":
     ########################
     #####  GPC Power  ######
     ########################
+
+    print("Creating GPC power tables (Table 2, 3, 4, 7, 11, 12, 16, 17, 18).")
 
     methods_2 = ["univariate-matched-gpc", "univariate-unmatched-gpc"]
     caption_2 = \
