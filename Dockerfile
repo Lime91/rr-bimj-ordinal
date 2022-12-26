@@ -18,6 +18,7 @@ RUN Rscript -e 'options(warn = 2); \
 # install R packages
 RUN Rscript -e 'options(warn = 2); \
     library(devtools); \
+    install_version("ggplot2", "3.3"); \
     install_version("optparse", "1.7.3"); \
     install_version("data.table", "1.14"); \
     install_version("dplyr", "1.0.10"); \

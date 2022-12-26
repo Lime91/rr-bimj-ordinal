@@ -44,7 +44,7 @@ In order to run `reproduce.py` without Docker, the folowing requrements must be 
 
 This project was mainly developed on `ubuntu20.04` operating system using `python3.8.10`.
 All python packages listed in `requirements.txt` are needed.
-Moreover, `R==4.2.1` and all packages listed in `ebstatmax/README.md` are required. 
+Moreover, `R==4.2.1` and all packages listed in `ebstatmax/README.md` as well as `ggplot2` are required. 
 Another requirement is the `pdflatex` compiler and several latex packages used by `pythontex`, which can be installed on ubuntu with `apt-get install texlive-latex-extra`.
 
 Once these requirements are met, execute the following commands:
