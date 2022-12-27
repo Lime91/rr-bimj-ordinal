@@ -1,3 +1,11 @@
+#!/usr/bin/Rscript
+
+################################################################################
+# Reproduce a Boxplot that visualizes the study dataset
+# Copyright (C) 2022  Konstantin Emil Thiel
+################################################################################
+
+
 library(dplyr)
 library(ggplot2)
 
